@@ -6,22 +6,43 @@ function DateRangeFilter({ startDate, endDate, onDateChange }) {
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 6 }, (_, i) => currentYear - i);
   
-  // When form initializes or resets, set default values for year only
+  // Default dates
+  const defaultStartDate = `${currentYear}-01-01`;
+  const defaultEndDate = `${currentYear}-12-31`;
+  
+  // Initialize state with default values if not provided
   const [startYear, setStartYear] = useState(startDate ? new Date(startDate).getFullYear().toString() : currentYear.toString());
   const [endYear, setEndYear] = useState(endDate ? new Date(endDate).getFullYear().toString() : currentYear.toString());
   
-  // Update the date values using the first day of the year and last day of the year
+  // Set initial date values if they're not already set
   useEffect(() => {
-    if (startYear) {
-      const firstDayOfYear = `${startYear}-01-01`;
-      onDateChange('startDate', firstDayOfYear);
+    if (!startDate) {
+      onDateChange('startDate', defaultStartDate);
     }
     
-    if (endYear) {
-      const lastDayOfYear = `${endYear}-12-31`;
-      onDateChange('endDate', lastDayOfYear);
+    if (!endDate) {
+      onDateChange('endDate', defaultEndDate);
     }
-  }, [startYear, endYear]);
+  }, []);
+  
+  // Update the date values when years change
+  const handleStartYearChange = (year) => {
+    setStartYear(year);
+    const firstDayOfYear = `${year}-01-01`;
+    onDateChange('startDate', firstDayOfYear);
+    
+    // If end year is less than start year, update it
+    if (parseInt(endYear) < parseInt(year)) {
+      setEndYear(year);
+      onDateChange('endDate', `${year}-12-31`);
+    }
+  };
+  
+  const handleEndYearChange = (year) => {
+    setEndYear(year);
+    const lastDayOfYear = `${year}-12-31`;
+    onDateChange('endDate', lastDayOfYear);
+  };
 
   const inputStyles = {
     '& .MuiOutlinedInput-root': {
@@ -67,7 +88,7 @@ function DateRangeFilter({ startDate, endDate, onDateChange }) {
             select
             id="startYear"
             value={startYear}
-            onChange={(e) => setStartYear(e.target.value)}
+            onChange={(e) => handleStartYearChange(e.target.value)}
             variant="outlined"
             size="small"
             sx={inputStyles}
@@ -89,7 +110,7 @@ function DateRangeFilter({ startDate, endDate, onDateChange }) {
             select
             id="endYear"
             value={endYear}
-            onChange={(e) => setEndYear(e.target.value)}
+            onChange={(e) => handleEndYearChange(e.target.value)}
             variant="outlined"
             size="small"
             sx={inputStyles}

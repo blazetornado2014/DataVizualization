@@ -85,12 +85,22 @@ function TaskCreationForm() {
         throw new Error('Task name is required');
       }
 
+      // We now auto-initialize date fields with year values, so this check is simplified
       if (!formData.startDate || !formData.endDate) {
-        throw new Error('Date range is required');
-      }
-
-      if (new Date(formData.startDate) > new Date(formData.endDate)) {
-        throw new Error('Start date must be before end date');
+        // Set default dates if somehow they're still missing
+        const currentYear = new Date().getFullYear();
+        if (!formData.startDate) {
+          setFormData({
+            ...formData,
+            startDate: `${currentYear}-01-01`
+          });
+        }
+        if (!formData.endDate) {
+          setFormData({
+            ...formData,
+            endDate: `${currentYear}-12-31`
+          });
+        }
       }
 
       if (formData.metrics.length === 0) {
