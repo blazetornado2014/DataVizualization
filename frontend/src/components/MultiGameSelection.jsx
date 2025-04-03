@@ -1,5 +1,19 @@
 import React, { useState } from 'react';
-import { Box, Typography, Paper, Checkbox, FormControl, FormLabel, FormGroup, FormControlLabel, Divider, Grid } from '@mui/material';
+import { 
+  Box, 
+  Typography, 
+  Paper, 
+  Checkbox, 
+  FormControl, 
+  FormLabel, 
+  FormGroup, 
+  FormControlLabel, 
+  Divider, 
+  Grid, 
+  Button, 
+  Chip,
+  Stack
+} from '@mui/material';
 import { getAvailableGames, getGameDisplayName, getCharactersForGame } from '../utils/gameData';
 
 /**
@@ -10,6 +24,8 @@ import { getAvailableGames, getGameDisplayName, getCharactersForGame } from '../
  */
 const MultiGameSelection = ({ value = { gameSources: [], gameCharacters: {} }, onChange }) => {
   const availableGames = getAvailableGames();
+  // Track expanded states for each game's character list
+  const [expandedGames, setExpandedGames] = useState({});
   
   // Handle game selection/deselection
   const handleGameChange = (gameId, checked) => {
@@ -66,6 +82,44 @@ const MultiGameSelection = ({ value = { gameSources: [], gameCharacters: {} }, o
     onChange({ gameSources: updatedSources, gameCharacters: updatedCharacters });
   };
   
+  // Toggle expand/collapse for a game's character list
+  const toggleExpanded = (gameId) => {
+    setExpandedGames(prev => ({
+      ...prev,
+      [gameId]: !prev[gameId]
+    }));
+  };
+  
+  // Select all characters for a game
+  const selectAllCharacters = (gameId) => {
+    const characters = getCharactersForGame(gameId);
+    let updatedSources = [...value.gameSources];
+    
+    // Make sure game is in sources
+    if (!updatedSources.includes(gameId)) {
+      updatedSources.push(gameId);
+    }
+    
+    // Set all characters
+    let updatedCharacters = { ...value.gameCharacters };
+    updatedCharacters[gameId] = [...characters];
+    
+    onChange({ gameSources: updatedSources, gameCharacters: updatedCharacters });
+  };
+  
+  // Deselect all characters for a game
+  const deselectAllCharacters = (gameId) => {
+    let updatedSources = [...value.gameSources];
+    let updatedCharacters = { ...value.gameCharacters };
+    
+    // If game is in sources, keep it but empty character list
+    if (updatedSources.includes(gameId)) {
+      updatedCharacters[gameId] = [];
+    }
+    
+    onChange({ gameSources: updatedSources, gameCharacters: updatedCharacters });
+  };
+  
   return (
     <Box sx={{ mt: 2 }}>
       <Typography variant="h6" gutterBottom>
@@ -76,46 +130,110 @@ const MultiGameSelection = ({ value = { gameSources: [], gameCharacters: {} }, o
       </Typography>
       
       <Grid container spacing={2}>
-        {availableGames.map(gameId => (
-          <Grid container={false} xs={12} sm={6} key={gameId}>
-            <Paper elevation={2} sx={{ p: 2, mb: 1 }}>
-              <FormControl component="fieldset">
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={value.gameSources.includes(gameId)}
-                      onChange={(e) => handleGameChange(gameId, e.target.checked)}
-                    />
-                  }
-                  label={<Typography variant="subtitle1">{getGameDisplayName(gameId)}</Typography>}
-                />
-                
-                {/* Only show character selection when game is selected */}
-                {value.gameSources.includes(gameId) && (
-                  <Box sx={{ ml: 3, mt: 1 }}>
-                    <FormLabel component="legend">Characters</FormLabel>
-                    <Divider sx={{ mb: 1 }} />
-                    <FormGroup>
-                      {getCharactersForGame(gameId).map(character => (
-                        <FormControlLabel
-                          key={character}
-                          control={
-                            <Checkbox
-                              size="small"
-                              checked={value.gameCharacters[gameId]?.includes(character) || false}
-                              onChange={(e) => handleCharacterChange(gameId, character, e.target.checked)}
-                            />
-                          }
-                          label={<Typography variant="body2">{character}</Typography>}
+        {availableGames.map(gameId => {
+          const characters = getCharactersForGame(gameId);
+          const selectedCount = value.gameCharacters[gameId]?.length || 0;
+          const isExpanded = expandedGames[gameId] || false;
+          
+          return (
+            <Grid lg={4} md={6} sm={12} key={gameId}>
+              <Paper 
+                elevation={2} 
+                sx={{ 
+                  p: 2, 
+                  mb: 1, 
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}
+              >
+                <FormControl component="fieldset" sx={{ width: '100%' }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={value.gameSources.includes(gameId)}
+                          onChange={(e) => handleGameChange(gameId, e.target.checked)}
                         />
-                      ))}
-                    </FormGroup>
+                      }
+                      label={<Typography variant="subtitle1">{getGameDisplayName(gameId)}</Typography>}
+                    />
+                    
+                    {/* Show character count badge if any are selected */}
+                    {selectedCount > 0 && (
+                      <Chip 
+                        size="small" 
+                        label={`${selectedCount} selected`} 
+                        color="primary" 
+                        variant="outlined"
+                      />
+                    )}
                   </Box>
-                )}
-              </FormControl>
-            </Paper>
-          </Grid>
-        ))}
+                  
+                  {/* Only show character selection when game is selected */}
+                  {value.gameSources.includes(gameId) && characters.length > 0 && (
+                    <Box sx={{ ml: 3, mt: 1 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                        <FormLabel component="legend">Characters</FormLabel>
+                        <Stack direction="row" spacing={1}>
+                          <Button 
+                            size="small" 
+                            variant="text" 
+                            onClick={() => selectAllCharacters(gameId)}
+                          >
+                            All
+                          </Button>
+                          <Button 
+                            size="small" 
+                            variant="text" 
+                            onClick={() => deselectAllCharacters(gameId)}
+                          >
+                            None
+                          </Button>
+                          <Button 
+                            size="small" 
+                            variant="text" 
+                            onClick={() => toggleExpanded(gameId)}
+                          >
+                            {isExpanded ? 'Collapse' : 'Expand'}
+                          </Button>
+                        </Stack>
+                      </Box>
+                      
+                      <Divider sx={{ mb: 1 }} />
+                      
+                      <FormGroup sx={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+                        gap: '0.25rem',
+                        maxHeight: isExpanded ? 'none' : '200px',
+                        overflow: 'auto'
+                      }}>
+                        {characters.map(character => (
+                          <FormControlLabel
+                            key={character}
+                            control={
+                              <Checkbox
+                                size="small"
+                                checked={value.gameCharacters[gameId]?.includes(character) || false}
+                                onChange={(e) => handleCharacterChange(gameId, character, e.target.checked)}
+                              />
+                            }
+                            label={
+                              <Typography variant="body2" noWrap title={character} sx={{ maxWidth: '120px' }}>
+                                {character}
+                              </Typography>
+                            }
+                          />
+                        ))}
+                      </FormGroup>
+                    </Box>
+                  )}
+                </FormControl>
+              </Paper>
+            </Grid>
+          );
+        })}
       </Grid>
     </Box>
   );
