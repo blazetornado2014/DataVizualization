@@ -77,7 +77,7 @@ const MultiGameSelection = ({ value = { gameSources: [], gameCharacters: {} }, o
       
       <Grid container spacing={2}>
         {availableGames.map(gameId => (
-          <Grid item xs={12} md={6} key={gameId}>
+          <Grid container={false} xs={12} sm={6} key={gameId}>
             <Paper elevation={2} sx={{ p: 2, mb: 1 }}>
               <FormControl component="fieldset">
                 <FormControlLabel
@@ -98,15 +98,15 @@ const MultiGameSelection = ({ value = { gameSources: [], gameCharacters: {} }, o
                     <FormGroup>
                       {getCharactersForGame(gameId).map(character => (
                         <FormControlLabel
-                          key={character.id}
+                          key={character}
                           control={
                             <Checkbox
                               size="small"
-                              checked={value.gameCharacters[gameId]?.includes(character.id) || false}
-                              onChange={(e) => handleCharacterChange(gameId, character.id, e.target.checked)}
+                              checked={value.gameCharacters[gameId]?.includes(character) || false}
+                              onChange={(e) => handleCharacterChange(gameId, character, e.target.checked)}
                             />
                           }
-                          label={<Typography variant="body2">{character.name}</Typography>}
+                          label={<Typography variant="body2">{character}</Typography>}
                         />
                       ))}
                     </FormGroup>
