@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import LineChart from './LineChart';
 import BarChart from './BarChart';
 import GameSelectionFilter from './GameSelectionFilter';
-import SimpleDateFilter from './SimpleDateFilter';
 import { fetchTaskResults } from '../api';
 
 function Dashboard({ selectedTask }) {
@@ -12,29 +11,13 @@ function Dashboard({ selectedTask }) {
   const [activeTab, setActiveTab] = useState('trends');
   const [activeGameFilter, setActiveGameFilter] = useState('all');
   const [activeMetric, setActiveMetric] = useState('kills');
-  
-  // Date range filter state
-  const [filterStartDate, setFilterStartDate] = useState(null);
-  const [filterEndDate, setFilterEndDate] = useState(null);
 
-  // Reset filters when task changes
+  // Reset game filter when task changes
   useEffect(() => {
     if (selectedTask) {
-      // Reset game filter
       setActiveGameFilter('all');
-      
-      // Reset date filters to the task's original date range when a task is selected
-      if (selectedTask.status === 'complete') {
-        const taskStartDate = new Date(selectedTask.start_date);
-        const taskEndDate = new Date(selectedTask.end_date);
-        setFilterStartDate(taskStartDate);
-        setFilterEndDate(taskEndDate);
-      } else {
-        setFilterStartDate(null);
-        setFilterEndDate(null);
-      }
     }
-  }, [selectedTask && selectedTask.id]); // Only run when task ID changes
+  }, [selectedTask]);
 
   // Fetch results when a completed task is selected
   useEffect(() => {
@@ -146,31 +129,10 @@ function Dashboard({ selectedTask }) {
     );
   }
 
-  // Filter data based on active game filter and date range
-  const filteredData = results.data.filter(item => {
-    // Apply game filter
-    if (activeGameFilter !== 'all' && item.game !== activeGameFilter) {
-      return false;
-    }
-    
-    // Apply date range filter if both dates are set
-    if (filterStartDate && filterEndDate) {
-      const itemDate = new Date(item.date);
-      
-      // Create new date objects to avoid modifying the original date objects
-      const startDate = new Date(filterStartDate);
-      startDate.setHours(0, 0, 0, 0);
-      
-      const endDate = new Date(filterEndDate);
-      endDate.setHours(23, 59, 59, 999);
-      
-      if (!(itemDate >= startDate && itemDate <= endDate)) {
-        return false;
-      }
-    }
-    
-    return true;
-  });
+  // Filter data based on active game filter
+  const filteredData = activeGameFilter === 'all' 
+    ? results.data 
+    : results.data.filter(item => item.game === activeGameFilter);
 
   return (
     <div>
@@ -223,35 +185,23 @@ function Dashboard({ selectedTask }) {
 
       <div className="mt-4">
         <div className="bg-gray-700 p-4 rounded-lg mb-4">
-          <div className="flex flex-wrap items-center justify-between mb-4">
-            <div className="flex flex-wrap gap-2">
-              {['kills', 'deaths', 'kd_ratio', 'win_rate'].map((metric) => (
-                <button
-                  key={metric}
-                  onClick={() => setActiveMetric(metric)}
-                  className={`px-3 py-1 text-xs rounded-full ${
-                    activeMetric === metric
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                  }`}
-                >
-                  {metric === 'kd_ratio' ? 'K/D Ratio' : 
-                   metric === 'win_rate' ? 'Win Rate' : 
-                   metric.charAt(0).toUpperCase() + metric.slice(1)}
-                </button>
-              ))}
-            </div>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {['kills', 'deaths', 'kd_ratio', 'win_rate'].map((metric) => (
+              <button
+                key={metric}
+                onClick={() => setActiveMetric(metric)}
+                className={`px-3 py-1 text-xs rounded-full ${
+                  activeMetric === metric
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                }`}
+              >
+                {metric === 'kd_ratio' ? 'K/D Ratio' : 
+                 metric === 'win_rate' ? 'Win Rate' : 
+                 metric.charAt(0).toUpperCase() + metric.slice(1)}
+              </button>
+            ))}
           </div>
-          
-          {/* Date Range Filter inside visualization area */}
-          <SimpleDateFilter 
-            startDate={filterStartDate}
-            endDate={filterEndDate}
-            onStartDateChange={setFilterStartDate}
-            onEndDateChange={setFilterEndDate}
-            minDate={new Date(selectedTask.start_date)}
-            maxDate={new Date(selectedTask.end_date)}
-          />
 
           {activeTab === 'trends' ? (
             <LineChart 
