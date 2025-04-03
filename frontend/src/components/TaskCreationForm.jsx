@@ -195,19 +195,11 @@ function TaskCreationForm() {
         
         {/* Form summary */}
         <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
-          <Chip 
-            size="medium" 
-            label={formData.taskName || "Unnamed Task"} 
-            sx={{ 
-              bgcolor: 'rgba(255,255,255,0.2)', 
-              color: 'white',
-              fontWeight: 'bold' 
-            }}
-          />
+          {/* Task name chip removed as requested */}
           {formData.startDate && formData.endDate && (
             <Chip 
               size="medium" 
-              label={`${formData.startDate} to ${formData.endDate}`} 
+              label={`${new Date(formData.startDate).getFullYear()} to ${new Date(formData.endDate).getFullYear()}`} 
               sx={{ 
                 bgcolor: 'rgba(255,255,255,0.2)', 
                 color: 'white',
@@ -255,6 +247,9 @@ function TaskCreationForm() {
                 '&.Mui-focused fieldset': {
                   borderColor: '#6a53bf',
                 },
+              },
+              '& .MuiInputBase-input': {
+                color: 'white', // Make input text white as requested
               },
             }}
           />
@@ -391,7 +386,7 @@ function TaskCreationForm() {
                     }}
                   />
                 }
-                label={<Typography variant="body2">Kills</Typography>}
+                label={<Typography variant="body2" color="white">Kills</Typography>}
               />
               
               <FormControlLabel
@@ -410,7 +405,7 @@ function TaskCreationForm() {
                     }}
                   />
                 }
-                label={<Typography variant="body2">Deaths</Typography>}
+                label={<Typography variant="body2" color="white">Deaths</Typography>}
               />
               
               <FormControlLabel
@@ -429,7 +424,7 @@ function TaskCreationForm() {
                     }}
                   />
                 }
-                label={<Typography variant="body2">Wins</Typography>}
+                label={<Typography variant="body2" color="white">Wins</Typography>}
               />
               
               <FormControlLabel
@@ -448,7 +443,7 @@ function TaskCreationForm() {
                     }}
                   />
                 }
-                label={<Typography variant="body2">KD Ratio</Typography>}
+                label={<Typography variant="body2" color="white">KD Ratio</Typography>}
               />
               
               <FormControlLabel
@@ -467,7 +462,7 @@ function TaskCreationForm() {
                     }}
                   />
                 }
-                label={<Typography variant="body2">Win Rate</Typography>}
+                label={<Typography variant="body2" color="white">Win Rate</Typography>}
               />
             </Box>
           </Paper>

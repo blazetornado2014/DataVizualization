@@ -1,14 +1,27 @@
-import React from 'react';
-import { Box, Grid, TextField, Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Grid, TextField, Typography, MenuItem } from '@mui/material';
 
 function DateRangeFilter({ startDate, endDate, onDateChange }) {
-  // Calculate default dates
-  const today = new Date();
-  const oneMonthAgo = new Date();
-  oneMonthAgo.setMonth(today.getMonth() - 1);
+  // Get current year and generate a list of years (current year and 5 years back)
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 6 }, (_, i) => currentYear - i);
   
-  const defaultStartDate = oneMonthAgo.toISOString().split('T')[0];
-  const defaultEndDate = today.toISOString().split('T')[0];
+  // When form initializes or resets, set default values for year only
+  const [startYear, setStartYear] = useState(startDate ? new Date(startDate).getFullYear().toString() : currentYear.toString());
+  const [endYear, setEndYear] = useState(endDate ? new Date(endDate).getFullYear().toString() : currentYear.toString());
+  
+  // Update the date values using the first day of the year and last day of the year
+  useEffect(() => {
+    if (startYear) {
+      const firstDayOfYear = `${startYear}-01-01`;
+      onDateChange('startDate', firstDayOfYear);
+    }
+    
+    if (endYear) {
+      const lastDayOfYear = `${endYear}-12-31`;
+      onDateChange('endDate', lastDayOfYear);
+    }
+  }, [startYear, endYear]);
 
   const inputStyles = {
     '& .MuiOutlinedInput-root': {
@@ -23,6 +36,9 @@ function DateRangeFilter({ startDate, endDate, onDateChange }) {
       },
     },
     '& .MuiInputBase-input': {
+      color: 'white',
+    },
+    '& .MuiSelect-icon': {
       color: 'white',
     },
     '& .MuiInputLabel-root': {
@@ -44,40 +60,50 @@ function DateRangeFilter({ startDate, endDate, onDateChange }) {
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6}>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            Start Date
+            Start Year
           </Typography>
           <TextField
             fullWidth
-            type="date"
-            id="startDate"
-            value={startDate || ''}
-            onChange={(e) => onDateChange('startDate', e.target.value)}
-            InputLabelProps={{ shrink: true }}
+            select
+            id="startYear"
+            value={startYear}
+            onChange={(e) => setStartYear(e.target.value)}
             variant="outlined"
             size="small"
             sx={inputStyles}
-          />
+          >
+            {years.map((year) => (
+              <MenuItem key={`start-${year}`} value={year.toString()}>
+                {year}
+              </MenuItem>
+            ))}
+          </TextField>
         </Grid>
         
         <Grid item xs={12} sm={6}>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            End Date
+            End Year
           </Typography>
           <TextField
             fullWidth
-            type="date"
-            id="endDate"
-            value={endDate || ''}
-            onChange={(e) => onDateChange('endDate', e.target.value)}
-            InputLabelProps={{ shrink: true }}
+            select
+            id="endYear"
+            value={endYear}
+            onChange={(e) => setEndYear(e.target.value)}
             variant="outlined"
             size="small"
-            inputProps={{
-              min: startDate || defaultStartDate,
-              max: today.toISOString().split('T')[0]
-            }}
             sx={inputStyles}
-          />
+          >
+            {years.map((year) => (
+              <MenuItem 
+                key={`end-${year}`} 
+                value={year.toString()}
+                disabled={parseInt(year) < parseInt(startYear)} // Disable years before start year
+              >
+                {year}
+              </MenuItem>
+            ))}
+          </TextField>
         </Grid>
       </Grid>
     </Box>
