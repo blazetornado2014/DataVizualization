@@ -65,15 +65,12 @@ function LineChart({ data, metric, gameFilter }) {
       .y(d => y(d.value))
       .curve(d3.curveMonotoneX);
     
-    // Add X axis
+    // Add X axis with year-based formatting
     svg.append("g")
       .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(x).ticks(5).tickFormat(d3.timeFormat("%b %d")))
+      .call(d3.axisBottom(x).ticks(5).tickFormat(d3.timeFormat("%Y"))) // Only show year
       .selectAll("text")
-      .style("text-anchor", "end")
-      .attr("dx", "-.8em")
-      .attr("dy", ".15em")
-      .attr("transform", "rotate(-45)")
+      .style("text-anchor", "middle")
       .attr("fill", "#9CA3AF");
     
     // Add Y axis
@@ -99,62 +96,88 @@ function LineChart({ data, metric, gameFilter }) {
       .duration(1000)
       .attr("stroke-dashoffset", 0);
     
-    // Add data points
-    svg.selectAll(".data-point")
-      .data(processedData)
-      .enter()
-      .append("circle")
-      .attr("class", "data-point")
-      .attr("cx", d => x(d.date))
-      .attr("cy", d => y(d.value))
-      .attr("r", 5)
+    // Add hover interaction to the line instead of individual points
+    // Create an invisible overlay for hover interactions
+    const overlay = svg.append("rect")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("fill", "none")
+      .attr("pointer-events", "all");
+    
+    // Add vertical line that follows mouse for better year tracking
+    const verticalLine = svg.append("line")
+      .attr("class", "hover-line")
+      .attr("y1", 0)
+      .attr("y2", height)
+      .attr("stroke", "#A78BFA")
+      .attr("stroke-width", 1)
+      .attr("stroke-dasharray", "5,5")
+      .style("opacity", 0);
+    
+    // Add circle that follows the line
+    const hoverCircle = svg.append("circle")
+      .attr("r", 6)
       .attr("fill", "#8B5CF6")
       .attr("stroke", "#F3F4F6")
       .attr("stroke-width", 2)
-      .style("opacity", 0)
-      .transition()
-      .delay((d, i) => i * 100)
-      .duration(500)
-      .style("opacity", 1);
+      .style("opacity", 0);
     
-    // Add hover interaction to data points
-    svg.selectAll(".data-point")
-      .on("mouseover", function(event, d) {
-        d3.select(this)
-          .transition()
-          .duration(100)
-          .attr("r", 8);
-        
-        // Format metric name for display
-        let metricName = metric === 'kd_ratio' ? 'K/D Ratio' : 
-                         metric === 'win_rate' ? 'Win Rate' : 
-                         metric.charAt(0).toUpperCase() + metric.slice(1);
-        
-        d3.select(tooltipRef.current)
-          .transition()
-          .duration(100)
-          .style("opacity", 0.9);
-        
-        d3.select(tooltipRef.current)
-          .html(`
-            <div class="font-medium">${d.date.toLocaleDateString()}</div>
-            <div>${metricName}: ${d.value.toFixed(2)}</div>
-            ${gameFilter === 'all' ? `<div class="text-xs mt-1">Games: ${d.games}</div>` : ''}
-          `)
-          .style("left", (event.pageX + 10) + "px")
-          .style("top", (event.pageY - 20) + "px");
-      })
-      .on("mouseout", function() {
-        d3.select(this)
-          .transition()
-          .duration(100)
-          .attr("r", 5);
-        
-        d3.select(tooltipRef.current)
-          .transition()
-          .duration(200)
-          .style("opacity", 0);
-      });
+    overlay.on("mousemove", function(event) {
+      const [mouseX] = d3.pointer(event);
+      const x0 = x.invert(mouseX);
+      
+      // Find the closest data point to the mouse position
+      const bisect = d3.bisector(d => d.date).left;
+      const i = bisect(processedData, x0, 1);
+      const d0 = processedData[i - 1];
+      const d1 = processedData[i];
+      
+      // If we have no data points or we're outside the range, exit
+      if (!d0 || !d1) return;
+      
+      const d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+      
+      // Position the circle and line
+      verticalLine
+        .attr("x1", x(d.date))
+        .attr("x2", x(d.date))
+        .style("opacity", 1);
+      
+      hoverCircle
+        .attr("cx", x(d.date))
+        .attr("cy", y(d.value))
+        .style("opacity", 1);
+      
+      // Format metric name for display
+      let metricName = metric === 'kd_ratio' ? 'K/D Ratio' : 
+                      metric === 'win_rate' ? 'Win Rate' : 
+                      metric.charAt(0).toUpperCase() + metric.slice(1);
+      
+      // Show tooltip
+      d3.select(tooltipRef.current)
+        .transition()
+        .duration(100)
+        .style("opacity", 0.9);
+      
+      d3.select(tooltipRef.current)
+        .html(`
+          <div class="font-medium">${d.date.getFullYear()}</div>
+          <div>${metricName}: ${d.value.toFixed(2)}</div>
+          ${gameFilter === 'all' ? `<div class="text-xs mt-1">Games: ${d.games}</div>` : ''}
+        `)
+        .style("left", (event.pageX + 10) + "px")
+        .style("top", (event.pageY - 20) + "px");
+    })
+    .on("mouseout", function() {
+      // Hide elements on mouseout
+      verticalLine.style("opacity", 0);
+      hoverCircle.style("opacity", 0);
+      
+      d3.select(tooltipRef.current)
+        .transition()
+        .duration(200)
+        .style("opacity", 0);
+    });
     
     // Add chart title
     svg.append("text")
@@ -163,7 +186,7 @@ function LineChart({ data, metric, gameFilter }) {
       .attr("text-anchor", "middle")
       .style("font-size", "16px")
       .style("fill", "#A78BFA")
-      .text(`${metric === 'kd_ratio' ? 'K/D Ratio' : metric === 'win_rate' ? 'Win Rate' : metric.charAt(0).toUpperCase() + metric.slice(1)} Over Time`);
+      .text(`${metric === 'kd_ratio' ? 'K/D Ratio' : metric === 'win_rate' ? 'Win Rate' : metric.charAt(0).toUpperCase() + metric.slice(1)} by Year`);
     
     // Add X axis label
     svg.append("text")
@@ -172,7 +195,7 @@ function LineChart({ data, metric, gameFilter }) {
       .attr("text-anchor", "middle")
       .style("font-size", "14px")
       .style("fill", "#9CA3AF")
-      .text("Date");
+      .text("Year");
     
     // Add Y axis label
     svg.append("text")
