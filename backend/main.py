@@ -59,14 +59,39 @@ def process_analytics_task(task_id: int, db: Session):
         processing_time = random.uniform(3, 8)  # Random time between 3 and 8 seconds
         time.sleep(processing_time)
         
-        # Generate synthetic gaming data for this task
-        game_stats = generate_game_statistics(
-            task.game_type,
-            task.start_date,
-            task.end_date,
-            task.metrics,
-            task.characters
-        )
+        # Process differently based on game_type
+        if task.game_type == 'custom':
+            # Advanced multi-game filtering
+            all_game_stats = []
+            
+            # Process each game source separately with its specific character filters
+            for game_source in task.gameSources:
+                # Get character filters for this game if they exist
+                character_filters = task.gameCharacters.get(game_source, []) if task.gameCharacters else []
+                
+                # Generate stats for this game
+                game_stats = generate_game_statistics(
+                    game_source,
+                    task.start_date,
+                    task.end_date,
+                    task.metrics,
+                    character_filters
+                )
+                
+                # Add to combined results
+                all_game_stats.extend(game_stats)
+                
+            # Use the combined stats
+            game_stats = all_game_stats
+        else:
+            # Standard filtering (single game or all games)
+            game_stats = generate_game_statistics(
+                task.game_type,
+                task.start_date,
+                task.end_date,
+                task.metrics,
+                task.characters
+            )
         
         # Store the generated data in the database
         for stat in game_stats:
@@ -105,6 +130,14 @@ def create_task(task: TaskCreate, background_tasks: BackgroundTasks, db: Session
         characters=task.characters,
         status="pending"
     )
+    
+    # Add multi-game selection fields if provided
+    if hasattr(task, 'gameSources') and task.gameSources:
+        db_task.gameSources = task.gameSources
+    
+    if hasattr(task, 'gameCharacters') and task.gameCharacters:
+        db_task.gameCharacters = task.gameCharacters
+    
     db.add(db_task)
     db.commit()
     db.refresh(db_task)

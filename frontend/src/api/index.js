@@ -51,20 +51,33 @@ export const fetchTask = async (taskId) => {
 export const createTask = async (taskData) => {
   const url = `${API_BASE_URL}/tasks`;
   logRequest(url, 'POST');
+  
+  // Prepare the request body with required fields
+  const requestBody = {
+    name: taskData.name,
+    game_type: taskData.game_type,
+    start_date: taskData.start_date,
+    end_date: taskData.end_date,
+    metrics: taskData.metrics,
+    characters: taskData.characters || [],
+  };
+  
+  // Add multi-game selection fields if present
+  if (taskData.gameSources && taskData.gameSources.length > 0) {
+    requestBody.gameSources = taskData.gameSources;
+  }
+  
+  if (taskData.gameCharacters && Object.keys(taskData.gameCharacters).length > 0) {
+    requestBody.gameCharacters = taskData.gameCharacters;
+  }
+  
   const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     },
-    body: JSON.stringify({
-      name: taskData.taskName,
-      game_type: taskData.gameType,
-      start_date: taskData.startDate,
-      end_date: taskData.endDate,
-      metrics: taskData.metrics,
-      characters: taskData.characters || [],
-    }),
+    body: JSON.stringify(requestBody),
   });
   return handleResponse(response);
 };

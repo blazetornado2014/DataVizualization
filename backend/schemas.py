@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, root_validator
 from typing import List, Optional, Dict, Any
 from datetime import date
 
@@ -10,6 +10,9 @@ class TaskBase(BaseModel):
     end_date: date
     metrics: List[str]
     characters: Optional[List[str]] = []
+    # New fields for multi-game selection
+    gameSources: Optional[List[str]] = []
+    gameCharacters: Optional[Dict[str, List[str]]] = {}
     
     @validator('end_date')
     def end_date_must_be_after_start_date(cls, v, values):
@@ -19,7 +22,7 @@ class TaskBase(BaseModel):
     
     @validator('game_type')
     def validate_game_type(cls, v):
-        valid_game_types = ['all', 'valorant', 'overwatch', 'league_of_legends', 'apex_legends', 'fortnite']
+        valid_game_types = ['all', 'valorant', 'overwatch', 'league_of_legends', 'apex_legends', 'fortnite', 'custom']
         if v not in valid_game_types:
             raise ValueError(f'game_type must be one of {valid_game_types}')
         return v
@@ -31,6 +34,16 @@ class TaskBase(BaseModel):
             if metric not in valid_metrics:
                 raise ValueError(f'metrics must contain only valid values: {valid_metrics}')
         return v
+        
+    @root_validator(skip_on_failure=True)
+    def validate_custom_game_type(cls, values):
+        game_type = values.get('game_type')
+        game_sources = values.get('gameSources', [])
+        
+        if game_type == 'custom' and not game_sources:
+            raise ValueError('gameSources must be provided when game_type is "custom"')
+            
+        return values
 
 class TaskCreate(TaskBase):
     """Schema for creating a new Task"""

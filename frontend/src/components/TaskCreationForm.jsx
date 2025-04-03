@@ -1,22 +1,23 @@
 import React, { useState } from 'react';
 import { useTaskContext } from '../contexts/TaskContext';
 import DateRangeFilter from './DateRangeFilter';
-import GameSelectionFilter from './GameSelectionFilter';
-import CharacterSelection from './CharacterSelection';
+import MultiGameSelection from './MultiGameSelection';
 
 function TaskCreationForm() {
   const { createTask } = useTaskContext();
   const [formData, setFormData] = useState({
     taskName: '',
-    gameType: 'all',
     startDate: '',
     endDate: '',
     metrics: ['kills', 'deaths', 'wins'],
-    characters: [],
+    // Multi-game selection with game sources and per-game character filters
+    gameSources: [],
+    gameCharacters: {}
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [useAdvancedFiltering, setUseAdvancedFiltering] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -33,18 +34,11 @@ function TaskCreationForm() {
     });
   };
 
-  const handleGameTypeChange = (gameType) => {
+  const handleGameSelectionChange = (selection) => {
     setFormData({
       ...formData,
-      gameType,
-      characters: [], // Reset character selection when game changes
-    });
-  };
-  
-  const handleCharacterChange = (characters) => {
-    setFormData({
-      ...formData,
-      characters,
+      gameSources: selection.gameSources,
+      gameCharacters: selection.gameCharacters
     });
   };
 
@@ -87,16 +81,39 @@ function TaskCreationForm() {
         throw new Error('At least one metric must be selected');
       }
 
-      await createTask(formData);
+      if (useAdvancedFiltering && formData.gameSources.length === 0) {
+        throw new Error('Please select at least one game source');
+      }
+
+      // Format the task data based on filtering mode
+      const taskData = {
+        name: formData.taskName,
+        start_date: formData.startDate,
+        end_date: formData.endDate,
+        metrics: formData.metrics
+      };
+
+      if (useAdvancedFiltering) {
+        // Advanced filtering - multiple games with specific character filters
+        taskData.game_type = 'custom';
+        taskData.gameSources = formData.gameSources;
+        taskData.gameCharacters = formData.gameCharacters;
+      } else {
+        // Simple filtering - single game type
+        taskData.game_type = 'all';
+        taskData.characters = [];
+      }
+
+      await createTask(taskData);
       
       // Reset form
       setFormData({
         taskName: '',
-        gameType: 'all',
         startDate: '',
         endDate: '',
         metrics: ['kills', 'deaths', 'wins'],
-        characters: [],
+        gameSources: [],
+        gameCharacters: {}
       });
       
       setSuccess(true);
@@ -139,16 +156,6 @@ function TaskCreationForm() {
       
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-1">
-          Game Type
-        </label>
-        <GameSelectionFilter 
-          selectedGame={formData.gameType} 
-          onGameChange={handleGameTypeChange}
-        />
-      </div>
-      
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
           Date Range
         </label>
         <DateRangeFilter
@@ -158,12 +165,40 @@ function TaskCreationForm() {
         />
       </div>
       
-      {/* Character Selection for specific games */}
-      <CharacterSelection
-        gameType={formData.gameType}
-        selectedCharacters={formData.characters}
-        onChange={handleCharacterChange}
-      />
+      <div className="flex items-center my-4">
+        <label className="inline-flex items-center cursor-pointer">
+          <input 
+            type="checkbox" 
+            checked={useAdvancedFiltering}
+            onChange={() => setUseAdvancedFiltering(!useAdvancedFiltering)}
+            className="sr-only peer" 
+          />
+          <div className="relative w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
+          <span className="ms-3 text-sm font-medium text-gray-300">Use Advanced Filtering</span>
+        </label>
+      </div>
+      
+      {useAdvancedFiltering ? (
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">
+            Advanced Game Source Filtering
+          </label>
+          <div className="bg-gray-800 p-4 rounded-md">
+            <MultiGameSelection 
+              value={{ 
+                gameSources: formData.gameSources, 
+                gameCharacters: formData.gameCharacters 
+              }}
+              onChange={handleGameSelectionChange} 
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="bg-gray-800 p-4 rounded-md">
+          <p className="text-sm text-gray-400">Using default filtering (all games)</p>
+          <p className="text-xs text-gray-500 mt-1">Enable advanced filtering to select specific games and characters</p>
+        </div>
+      )}
       
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-1">

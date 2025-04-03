@@ -8,11 +8,13 @@ class Task(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    game_type = Column(String, nullable=False)  # 'all', 'valorant', 'overwatch', etc.
+    game_type = Column(String, nullable=False)  # 'all', 'valorant', 'overwatch', etc. or 'custom'
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
     metrics = Column(JSON, nullable=False)  # List of metrics to analyze
-    characters = Column(JSON, nullable=True)  # List of specific characters to include
+    characters = Column(JSON, nullable=True)  # List of specific characters to include (for simple filtering)
+    gameSources = Column(JSON, nullable=True)  # List of game sources for advanced filtering
+    gameCharacters = Column(JSON, nullable=True)  # Dict mapping game sources to character lists
     status = Column(String, nullable=False)  # 'pending', 'in_progress', 'complete', 'failed'
     
     statistics = relationship("GameStatistic", back_populates="task")
