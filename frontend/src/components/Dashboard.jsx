@@ -251,7 +251,10 @@ function Dashboard({ selectedTask }) {
                 <label className="block text-gray-400 text-xs mb-1">Start Date</label>
                 <DatePicker
                   selected={filterStartDate}
-                  onChange={(date) => setFilterStartDate(date)}
+                  onChange={(date) => {
+                    console.log("Setting start date:", date);
+                    setFilterStartDate(date);
+                  }}
                   selectsStart
                   startDate={filterStartDate}
                   endDate={filterEndDate}
@@ -259,13 +262,34 @@ function Dashboard({ selectedTask }) {
                   maxDate={filterEndDate || new Date(selectedTask.end_date)}
                   className="w-full bg-gray-900 text-white px-2 py-1 text-sm rounded-md border border-gray-700 focus:outline-none focus:ring-1 focus:ring-purple-500"
                   dateFormat="MMM d, yyyy"
+                  showPopperArrow={false}
+                  popperPlacement="bottom-start"
+                  popperModifiers={[
+                    {
+                      name: "offset",
+                      options: {
+                        offset: [0, 8],
+                      },
+                    },
+                    {
+                      name: "preventOverflow",
+                      options: {
+                        rootBoundary: "viewport",
+                        padding: 8,
+                      },
+                    },
+                  ]}
+                  fixedHeight
                 />
               </div>
               <div>
                 <label className="block text-gray-400 text-xs mb-1">End Date</label>
                 <DatePicker
                   selected={filterEndDate}
-                  onChange={(date) => setFilterEndDate(date)}
+                  onChange={(date) => {
+                    console.log("Setting end date:", date);
+                    setFilterEndDate(date);
+                  }}
                   selectsEnd
                   startDate={filterStartDate}
                   endDate={filterEndDate}
@@ -273,9 +297,43 @@ function Dashboard({ selectedTask }) {
                   maxDate={new Date(selectedTask.end_date)}
                   className="w-full bg-gray-900 text-white px-2 py-1 text-sm rounded-md border border-gray-700 focus:outline-none focus:ring-1 focus:ring-purple-500"
                   dateFormat="MMM d, yyyy"
+                  showPopperArrow={false}
+                  popperPlacement="bottom-start"
+                  popperModifiers={[
+                    {
+                      name: "offset",
+                      options: {
+                        offset: [0, 8],
+                      },
+                    },
+                    {
+                      name: "preventOverflow",
+                      options: {
+                        rootBoundary: "viewport",
+                        padding: 8,
+                      },
+                    },
+                  ]}
+                  fixedHeight
                 />
               </div>
             </div>
+            {filterStartDate && filterEndDate && (
+              <div className="mt-2 flex justify-between items-center">
+                <div className="text-xs text-gray-400">
+                  Filtering: {filterStartDate.toLocaleDateString()} - {filterEndDate.toLocaleDateString()}
+                </div>
+                <button 
+                  onClick={() => {
+                    setFilterStartDate(new Date(selectedTask.start_date));
+                    setFilterEndDate(new Date(selectedTask.end_date));
+                  }}
+                  className="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded"
+                >
+                  Reset
+                </button>
+              </div>
+            )}
           </div>
 
           {activeTab === 'trends' ? (
