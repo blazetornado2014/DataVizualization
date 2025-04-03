@@ -1,0 +1,42 @@
+Application Description
+Overview
+This demo application is designed as a unified analytics dashboard targeted at competitive gamers who want to easily visualize and analyze their performance statistics from multiple games (e.g., Valorant, Overwatch, League of Legends). For demonstration purposes, this application uses generated user data to illustrate its functionality clearly.
+
+Frontend (React.js + D3.js)
+
+The React.js frontend allows users to create new analytics tasks, specifying filters such as date range and game types.
+
+Users can track the status of their tasks (pending, in progress, complete).
+
+Once tasks are completed, users see interactive visualizations generated using D3.js:
+
+A line chart showing trends in key gaming stats (e.g., kills, deaths, win-rate) over time.
+
+A bar chart aggregating performance metrics by game or by character/class type.
+
+Charts support dynamic filtering, allowing users to drill down into specific time periods or categories for deeper insights.
+
+Backend (FastAPI + SQLite3 + SQLAlchemy)
+
+A Python FastAPI backend serves as the RESTful API layer:
+
+Accepts task creation requests, storing them with associated filters.
+
+Implements a simulated job queue (in-memory), demonstrating a clear task lifecycle (pending → in progress → complete).
+
+Serves dummy-generated analytics data, stored and managed via an SQLite3 database using SQLAlchemy ORM.
+
+Includes clearly defined endpoints for task creation, task status checks, and fetching generated analytics results.
+
+Tech Stack
+
+Frontend: React.js, D3.js, Vite
+
+Backend: FastAPI (Python)
+
+Database: SQLite3 with SQLAlchemy ORM
+
+Hosting Environment: Replit (for easy deployment and sharing)
+
+Purpose & Context
+This demo serves as a foundation for a full-stack engineer screening task, showcasing capabilities in data ingestion, storage, visualization, and API-driven application development. It's intended as a proof-of-concept focusing primarily on the visualization of aggregated gaming statistics and analytics, without requiring external API integration or real-world data reliability concerns.
