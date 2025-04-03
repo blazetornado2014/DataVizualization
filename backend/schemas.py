@@ -9,6 +9,7 @@ class TaskBase(BaseModel):
     start_date: date
     end_date: date
     metrics: List[str]
+    characters: Optional[List[str]] = []
     
     @validator('end_date')
     def end_date_must_be_after_start_date(cls, v, values):
@@ -18,7 +19,7 @@ class TaskBase(BaseModel):
     
     @validator('game_type')
     def validate_game_type(cls, v):
-        valid_game_types = ['all', 'valorant', 'overwatch', 'lol', 'apex', 'fortnite']
+        valid_game_types = ['all', 'valorant', 'overwatch', 'league_of_legends', 'apex_legends', 'fortnite']
         if v not in valid_game_types:
             raise ValueError(f'game_type must be one of {valid_game_types}')
         return v

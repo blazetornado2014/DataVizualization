@@ -12,6 +12,7 @@ class Task(Base):
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
     metrics = Column(JSON, nullable=False)  # List of metrics to analyze
+    characters = Column(JSON, nullable=True)  # List of specific characters to include
     status = Column(String, nullable=False)  # 'pending', 'in_progress', 'complete', 'failed'
     
     statistics = relationship("GameStatistic", back_populates="task")

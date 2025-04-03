@@ -76,8 +76,8 @@ def generate_daily_stat(game, character, stat_date, skill_level=0.5):
     
     return stat
 
-def generate_game_statistics(game_type, start_date, end_date, metrics):
-    """Generate synthetic game statistics for the specified period and game type"""
+def generate_game_statistics(game_type, start_date, end_date, metrics, characters=None):
+    """Generate synthetic game statistics for the specified period and game type with optional character filtering"""
     # Convert string dates to datetime objects if needed
     if isinstance(start_date, str):
         start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
@@ -105,14 +105,23 @@ def generate_game_statistics(game_type, start_date, end_date, metrics):
                 # Only generate data for some games on some days (for variety)
                 continue
                 
-            # Determine how many characters were played on this day
-            characters_played = random.randint(1, 3)
-            
             # Get available characters for this game
             available_characters = GAME_CHARACTERS.get(game, ['Unknown'])
             
-            # Select random characters
-            daily_characters = random.sample(available_characters, min(characters_played, len(available_characters)))
+            # If specific characters are requested, use those (if they're available for this game)
+            if characters and len(characters) > 0 and game_type != 'all':
+                # Filter characters to only include ones available for this game
+                filtered_characters = [c for c in characters if c in available_characters]
+                if filtered_characters:
+                    daily_characters = filtered_characters
+                else:
+                    # If none of the requested characters are available, use a random one
+                    daily_characters = random.sample(available_characters, 1)
+            else:
+                # Otherwise, determine how many characters were played on this day
+                characters_played = random.randint(1, 3)
+                # Select random characters
+                daily_characters = random.sample(available_characters, min(characters_played, len(available_characters)))
             
             # For each character, generate a daily stat
             for character in daily_characters:

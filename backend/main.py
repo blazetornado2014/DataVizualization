@@ -64,7 +64,8 @@ def process_analytics_task(task_id: int, db: Session):
             task.game_type,
             task.start_date,
             task.end_date,
-            task.metrics
+            task.metrics,
+            task.characters
         )
         
         # Store the generated data in the database
@@ -101,6 +102,7 @@ def create_task(task: TaskCreate, background_tasks: BackgroundTasks, db: Session
         start_date=task.start_date,
         end_date=task.end_date,
         metrics=task.metrics,
+        characters=task.characters,
         status="pending"
     )
     db.add(db_task)
@@ -145,9 +147,10 @@ def get_task_results(
     task_id: int, 
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
+    character: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    """Get results for a completed task with optional date filtering"""
+    """Get results for a completed task with optional date and character filtering"""
     # Check if task exists and is completed
     task = db.query(Task).filter(Task.id == task_id).first()
     if not task:
@@ -165,6 +168,10 @@ def get_task_results(
     
     if end_date:
         query = query.filter(GameStatistic.date <= end_date)
+    
+    # Add character filter if provided
+    if character and character != 'all':
+        query = query.filter(GameStatistic.character == character)
     
     # Execute the query
     stats = query.all()

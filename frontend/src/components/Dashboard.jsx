@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import LineChart from './LineChart';
 import BarChart from './BarChart';
 import GameSelectionFilter from './GameSelectionFilter';
+import CharacterFilter from './CharacterFilter';
 import { fetchTaskResults } from '../api';
 
 function Dashboard({ selectedTask }) {
@@ -17,11 +18,15 @@ function Dashboard({ selectedTask }) {
     startDate: null,
     endDate: null
   });
+  
+  // Character filter state
+  const [activeCharacter, setActiveCharacter] = useState('all');
 
-  // Reset game filter when task changes
+  // Reset filters when task changes
   useEffect(() => {
     if (selectedTask) {
       setActiveGameFilter('all');
+      setActiveCharacter('all');
       
       // Set initial date range from the selected task
       setDateRange({
@@ -31,7 +36,7 @@ function Dashboard({ selectedTask }) {
     }
   }, [selectedTask]);
 
-  // Fetch results when a completed task is selected or date range changes
+  // Fetch results when a completed task is selected or filters change
   useEffect(() => {
     const getResults = async () => {
       if (!selectedTask || selectedTask.status !== 'complete') {
@@ -43,11 +48,12 @@ function Dashboard({ selectedTask }) {
       setError(null);
       
       try {
-        // Pass the date range to the API for filtering
+        // Pass all filters to the API
         const taskResults = await fetchTaskResults(
           selectedTask.id,
           dateRange.startDate,
-          dateRange.endDate
+          dateRange.endDate,
+          activeCharacter
         );
         setResults(taskResults);
       } catch (err) {
@@ -60,7 +66,7 @@ function Dashboard({ selectedTask }) {
     };
     
     getResults();
-  }, [selectedTask, dateRange.startDate, dateRange.endDate]);
+  }, [selectedTask, dateRange.startDate, dateRange.endDate, activeCharacter]);
 
   if (!selectedTask) {
     return (
@@ -255,12 +261,23 @@ function Dashboard({ selectedTask }) {
             </button>
           </div>
           
-          <div>
+          <div className="flex items-center space-x-3">
             <GameSelectionFilter 
               selectedGame={activeGameFilter} 
-              onGameChange={setActiveGameFilter}
+              onGameChange={(game) => {
+                setActiveGameFilter(game);
+                setActiveCharacter('all'); // Reset character when game changes
+              }}
               includeAllOption={true} 
             />
+            
+            {activeGameFilter !== 'all' && (
+              <CharacterFilter
+                gameType={activeGameFilter}
+                selectedCharacter={activeCharacter}
+                onCharacterChange={setActiveCharacter}
+              />
+            )}
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTaskContext } from '../contexts/TaskContext';
 import DateRangeFilter from './DateRangeFilter';
 import GameSelectionFilter from './GameSelectionFilter';
+import CharacterSelection from './CharacterSelection';
 
 function TaskCreationForm() {
   const { createTask } = useTaskContext();
@@ -11,6 +12,7 @@ function TaskCreationForm() {
     startDate: '',
     endDate: '',
     metrics: ['kills', 'deaths', 'wins'],
+    characters: [],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -35,6 +37,14 @@ function TaskCreationForm() {
     setFormData({
       ...formData,
       gameType,
+      characters: [], // Reset character selection when game changes
+    });
+  };
+  
+  const handleCharacterChange = (characters) => {
+    setFormData({
+      ...formData,
+      characters,
     });
   };
 
@@ -86,6 +96,7 @@ function TaskCreationForm() {
         startDate: '',
         endDate: '',
         metrics: ['kills', 'deaths', 'wins'],
+        characters: [],
       });
       
       setSuccess(true);
@@ -146,6 +157,13 @@ function TaskCreationForm() {
           onDateChange={handleDateChange}
         />
       </div>
+      
+      {/* Character Selection for specific games */}
+      <CharacterSelection
+        gameType={formData.gameType}
+        selectedCharacters={formData.characters}
+        onChange={handleCharacterChange}
+      />
       
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-1">

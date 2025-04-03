@@ -63,22 +63,26 @@ export const createTask = async (taskData) => {
       start_date: taskData.startDate,
       end_date: taskData.endDate,
       metrics: taskData.metrics,
+      characters: taskData.characters || [],
     }),
   });
   return handleResponse(response);
 };
 
-// Get task results with optional date filtering
-export const fetchTaskResults = async (taskId, startDate = null, endDate = null) => {
+// Get task results with optional date and character filtering
+export const fetchTaskResults = async (taskId, startDate = null, endDate = null, character = null) => {
   let url = `${API_BASE_URL}/tasks/${taskId}/results`;
   
-  // Add date range filtering parameters if provided
+  // Add filtering parameters if provided
   const params = new URLSearchParams();
   if (startDate) {
     params.append('start_date', startDate);
   }
   if (endDate) {
     params.append('end_date', endDate);
+  }
+  if (character && character !== 'all') {
+    params.append('character', character);
   }
   
   const queryString = params.toString();
