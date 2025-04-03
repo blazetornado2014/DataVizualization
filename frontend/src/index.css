@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #111827;
+  font-family: 'Roboto', sans-serif;
+}
+
+.font-orbitron {
+  font-family: 'Orbitron', sans-serif;
+}
+
+/* Gaming-inspired design elements */
+.gaming-gradient {
+  background: linear-gradient(90deg, #6f42c1 0%, #e83e8c 100%);
+}
+
+.gaming-border {
+  border: 2px solid transparent;
+  border-image: linear-gradient(to right, #6f42c1, #e83e8c);
+  border-image-slice: 1;
+}
+
+/* Custom tooltip styles */
+.d3-tooltip {
+  position: absolute;
+  padding: 10px;
+  background: rgba(20, 20, 30, 0.9);
+  border: 1px solid #6f42c1;
+  border-radius: 4px;
+  pointer-events: none;
+  color: white;
+  font-size: 14px;
+  max-width: 200px;
+  z-index: 100;
+}
+
+/* Status badge styles */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-pending {
+  background-color: #4b5563;
+  color: white;
+}
+
+.status-in-progress {
+  background-color: #6366f1;
+  color: white;
+}
+
+.status-complete {
+  background-color: #10b981;
+  color: white;
+}
+
+.status-failed {
+  background-color: #ef4444;
+  color: white;
+}
+
+/* Chart related styles */
+.chart-container {
+  background: rgba(17, 24, 39, 0.7);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.chart-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  color: #a78bfa;
+  margin-bottom: 1rem;
+}
+
+/* Animation for loading */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
