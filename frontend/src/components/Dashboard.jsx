@@ -20,18 +20,21 @@ function Dashboard({ selectedTask }) {
   // Reset filters when task changes
   useEffect(() => {
     if (selectedTask) {
+      // Reset game filter
       setActiveGameFilter('all');
       
-      // Reset date filters to the task's original date range
+      // Reset date filters to the task's original date range when a task is selected
       if (selectedTask.status === 'complete') {
-        setFilterStartDate(new Date(selectedTask.start_date));
-        setFilterEndDate(new Date(selectedTask.end_date));
+        const taskStartDate = new Date(selectedTask.start_date);
+        const taskEndDate = new Date(selectedTask.end_date);
+        setFilterStartDate(taskStartDate);
+        setFilterEndDate(taskEndDate);
       } else {
         setFilterStartDate(null);
         setFilterEndDate(null);
       }
     }
-  }, [selectedTask]);
+  }, [selectedTask && selectedTask.id]); // Only run when task ID changes
 
   // Fetch results when a completed task is selected
   useEffect(() => {
@@ -153,6 +156,7 @@ function Dashboard({ selectedTask }) {
     // Apply date range filter if both dates are set
     if (filterStartDate && filterEndDate) {
       const itemDate = new Date(item.date);
+      
       // Create new date objects to avoid modifying the original date objects
       const startDate = new Date(filterStartDate);
       startDate.setHours(0, 0, 0, 0);
@@ -160,7 +164,9 @@ function Dashboard({ selectedTask }) {
       const endDate = new Date(filterEndDate);
       endDate.setHours(23, 59, 59, 999);
       
-      return itemDate >= startDate && itemDate <= endDate;
+      if (!(itemDate >= startDate && itemDate <= endDate)) {
+        return false;
+      }
     }
     
     return true;
@@ -216,33 +222,60 @@ function Dashboard({ selectedTask }) {
       </div>
 
       <div className="mt-4">
-        {/* Date Range Filter */}
-        <DateRangeFilter
-          startDate={filterStartDate}
-          endDate={filterEndDate}
-          onStartDateChange={(date) => setFilterStartDate(date)}
-          onEndDateChange={(date) => setFilterEndDate(date)}
-          minDate={new Date(selectedTask.start_date)}
-          maxDate={new Date(selectedTask.end_date)}
-        />
-        
         <div className="bg-gray-700 p-4 rounded-lg mb-4">
-          <div className="flex flex-wrap gap-2 mb-4">
-            {['kills', 'deaths', 'kd_ratio', 'win_rate'].map((metric) => (
-              <button
-                key={metric}
-                onClick={() => setActiveMetric(metric)}
-                className={`px-3 py-1 text-xs rounded-full ${
-                  activeMetric === metric
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                }`}
-              >
-                {metric === 'kd_ratio' ? 'K/D Ratio' : 
-                 metric === 'win_rate' ? 'Win Rate' : 
-                 metric.charAt(0).toUpperCase() + metric.slice(1)}
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center justify-between mb-4">
+            <div className="flex flex-wrap gap-2">
+              {['kills', 'deaths', 'kd_ratio', 'win_rate'].map((metric) => (
+                <button
+                  key={metric}
+                  onClick={() => setActiveMetric(metric)}
+                  className={`px-3 py-1 text-xs rounded-full ${
+                    activeMetric === metric
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                  }`}
+                >
+                  {metric === 'kd_ratio' ? 'K/D Ratio' : 
+                   metric === 'win_rate' ? 'Win Rate' : 
+                   metric.charAt(0).toUpperCase() + metric.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {/* Date Range Filter inside visualization area */}
+          <div className="mb-6 bg-gray-800 p-3 rounded-md">
+            <h4 className="text-white text-sm font-medium mb-2">Filter By Date Range</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-gray-400 text-xs mb-1">Start Date</label>
+                <DatePicker
+                  selected={filterStartDate}
+                  onChange={(date) => setFilterStartDate(date)}
+                  selectsStart
+                  startDate={filterStartDate}
+                  endDate={filterEndDate}
+                  minDate={new Date(selectedTask.start_date)}
+                  maxDate={filterEndDate || new Date(selectedTask.end_date)}
+                  className="w-full bg-gray-900 text-white px-2 py-1 text-sm rounded-md border border-gray-700 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                  dateFormat="MMM d, yyyy"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-400 text-xs mb-1">End Date</label>
+                <DatePicker
+                  selected={filterEndDate}
+                  onChange={(date) => setFilterEndDate(date)}
+                  selectsEnd
+                  startDate={filterStartDate}
+                  endDate={filterEndDate}
+                  minDate={filterStartDate || new Date(selectedTask.start_date)}
+                  maxDate={new Date(selectedTask.end_date)}
+                  className="w-full bg-gray-900 text-white px-2 py-1 text-sm rounded-md border border-gray-700 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                  dateFormat="MMM d, yyyy"
+                />
+              </div>
+            </div>
           </div>
 
           {activeTab === 'trends' ? (
