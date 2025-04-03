@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import LineChart from './LineChart';
 import BarChart from './BarChart';
 import GameSelectionFilter from './GameSelectionFilter';
+import DateRangeFilter from './DateRangeFilter';
 import { fetchTaskResults } from '../api';
 
 function Dashboard({ selectedTask }) {
@@ -11,11 +12,24 @@ function Dashboard({ selectedTask }) {
   const [activeTab, setActiveTab] = useState('trends');
   const [activeGameFilter, setActiveGameFilter] = useState('all');
   const [activeMetric, setActiveMetric] = useState('kills');
+  
+  // Date range filter state
+  const [filterStartDate, setFilterStartDate] = useState(null);
+  const [filterEndDate, setFilterEndDate] = useState(null);
 
-  // Reset game filter when task changes
+  // Reset filters when task changes
   useEffect(() => {
     if (selectedTask) {
       setActiveGameFilter('all');
+      
+      // Reset date filters to the task's original date range
+      if (selectedTask.status === 'complete') {
+        setFilterStartDate(new Date(selectedTask.start_date));
+        setFilterEndDate(new Date(selectedTask.end_date));
+      } else {
+        setFilterStartDate(null);
+        setFilterEndDate(null);
+      }
     }
   }, [selectedTask]);
 
@@ -129,10 +143,28 @@ function Dashboard({ selectedTask }) {
     );
   }
 
-  // Filter data based on active game filter
-  const filteredData = activeGameFilter === 'all' 
-    ? results.data 
-    : results.data.filter(item => item.game === activeGameFilter);
+  // Filter data based on active game filter and date range
+  const filteredData = results.data.filter(item => {
+    // Apply game filter
+    if (activeGameFilter !== 'all' && item.game !== activeGameFilter) {
+      return false;
+    }
+    
+    // Apply date range filter if both dates are set
+    if (filterStartDate && filterEndDate) {
+      const itemDate = new Date(item.date);
+      // Create new date objects to avoid modifying the original date objects
+      const startDate = new Date(filterStartDate);
+      startDate.setHours(0, 0, 0, 0);
+      
+      const endDate = new Date(filterEndDate);
+      endDate.setHours(23, 59, 59, 999);
+      
+      return itemDate >= startDate && itemDate <= endDate;
+    }
+    
+    return true;
+  });
 
   return (
     <div>
@@ -184,6 +216,16 @@ function Dashboard({ selectedTask }) {
       </div>
 
       <div className="mt-4">
+        {/* Date Range Filter */}
+        <DateRangeFilter
+          startDate={filterStartDate}
+          endDate={filterEndDate}
+          onStartDateChange={(date) => setFilterStartDate(date)}
+          onEndDateChange={(date) => setFilterEndDate(date)}
+          minDate={new Date(selectedTask.start_date)}
+          maxDate={new Date(selectedTask.end_date)}
+        />
+        
         <div className="bg-gray-700 p-4 rounded-lg mb-4">
           <div className="flex flex-wrap gap-2 mb-4">
             {['kills', 'deaths', 'kd_ratio', 'win_rate'].map((metric) => (

@@ -1,44 +1,50 @@
 import React from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import '../assets/datepicker.css';
 
-function DateRangeFilter({ startDate, endDate, onDateChange }) {
-  // Calculate default dates
-  const today = new Date();
-  const oneMonthAgo = new Date();
-  oneMonthAgo.setMonth(today.getMonth() - 1);
-  
-  const defaultStartDate = oneMonthAgo.toISOString().split('T')[0];
-  const defaultEndDate = today.toISOString().split('T')[0];
-
+function DateRangeFilter({ 
+  startDate, 
+  endDate, 
+  onStartDateChange, 
+  onEndDateChange,
+  minDate,
+  maxDate 
+}) {
   return (
-    <div className="grid grid-cols-2 gap-3">
-      <div>
-        <label htmlFor="startDate" className="block text-xs font-medium text-gray-400 mb-1">
-          Start Date
-        </label>
-        <input
-          type="date"
-          id="startDate"
-          value={startDate || ''}
-          onChange={(e) => onDateChange('startDate', e.target.value)}
-          className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-          placeholder={defaultStartDate}
-        />
-      </div>
+    <div className="bg-gray-700 p-4 rounded-md mb-4">
+      <h3 className="text-white text-md font-medium mb-3">Filter Date Range</h3>
       
-      <div>
-        <label htmlFor="endDate" className="block text-xs font-medium text-gray-400 mb-1">
-          End Date
-        </label>
-        <input
-          type="date"
-          id="endDate"
-          value={endDate || ''}
-          onChange={(e) => onDateChange('endDate', e.target.value)}
-          className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-          placeholder={defaultEndDate}
-          min={startDate || defaultStartDate}
-          max={today.toISOString().split('T')[0]}
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-gray-400 text-sm mb-1">Start Date</label>
+          <DatePicker
+            selected={startDate}
+            onChange={onStartDateChange}
+            selectsStart
+            startDate={startDate}
+            endDate={endDate}
+            minDate={minDate}
+            maxDate={endDate || maxDate}
+            className="w-full bg-gray-800 text-white px-3 py-2 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            dateFormat="MMM d, yyyy"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-gray-400 text-sm mb-1">End Date</label>
+          <DatePicker
+            selected={endDate}
+            onChange={onEndDateChange}
+            selectsEnd
+            startDate={startDate}
+            endDate={endDate}
+            minDate={startDate || minDate}
+            maxDate={maxDate}
+            className="w-full bg-gray-800 text-white px-3 py-2 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500" 
+            dateFormat="MMM d, yyyy"
+          />
+        </div>
       </div>
     </div>
   );
