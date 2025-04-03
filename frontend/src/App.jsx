@@ -56,13 +56,15 @@ function App() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        {/* Create Task Section - Full Width at Top */}
+        <div className="bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
+          <h2 className="text-xl font-bold mb-4 text-purple-400 font-orbitron">Create Task</h2>
+          <TaskCreationForm />
+        </div>
+        
+        {/* Main Content Grid - Task List and Dashboard */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-1">
-            <div className="bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
-              <h2 className="text-xl font-bold mb-4 text-purple-400 font-orbitron">Create Task</h2>
-              <TaskCreationForm />
-            </div>
-            
             <div className="bg-gray-800 rounded-lg shadow-lg p-6">
               <h2 className="text-xl font-bold mb-4 text-purple-400 font-orbitron">Task Queue</h2>
               <TaskList onTaskSelect={handleTaskSelect} />

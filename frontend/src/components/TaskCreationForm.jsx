@@ -1,5 +1,21 @@
 import React, { useState } from 'react';
 import { useTaskContext } from '../contexts/TaskContext';
+import { 
+  Box, 
+  Typography, 
+  Paper, 
+  Button, 
+  Chip,
+  TextField,
+  FormControl,
+  FormControlLabel,
+  Switch,
+  Stack,
+  Alert,
+  LinearProgress,
+  CircularProgress,
+  Checkbox
+} from '@mui/material';
 import DateRangeFilter from './DateRangeFilter';
 import MultiGameSelection from './MultiGameSelection';
 
@@ -125,65 +141,170 @@ function TaskCreationForm() {
     }
   };
 
+  // Calculate metrics percentage
+  const totalMetrics = 5; // Total available metrics
+  const selectedMetrics = formData.metrics.length;
+  const metricsPercentage = (selectedMetrics / totalMetrics) * 100;
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+      {/* Status messages */}
       {error && (
-        <div className="bg-red-900 text-white p-3 rounded-md">
+        <Alert 
+          severity="error" 
+          sx={{ 
+            mb: 3, 
+            borderRadius: '10px',
+            boxShadow: 2
+          }}
+        >
           {error}
-        </div>
+        </Alert>
       )}
       
       {success && (
-        <div className="bg-green-900 text-white p-3 rounded-md">
+        <Alert 
+          severity="success" 
+          sx={{ 
+            mb: 3, 
+            borderRadius: '10px',
+            boxShadow: 2
+          }}
+        >
           Task created successfully!
-        </div>
+        </Alert>
       )}
       
-      <div>
-        <label htmlFor="taskName" className="block text-sm font-medium text-gray-300 mb-1">
-          Task Name
-        </label>
-        <input
-          type="text"
-          id="taskName"
-          name="taskName"
-          value={formData.taskName}
-          onChange={handleInputChange}
-          className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-          placeholder="Performance Analysis Q2"
-        />
-      </div>
-      
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
-          Date Range
-        </label>
-        <DateRangeFilter
-          startDate={formData.startDate}
-          endDate={formData.endDate}
-          onDateChange={handleDateChange}
-        />
-      </div>
-      
-      <div className="flex items-center my-4">
-        <label className="inline-flex items-center cursor-pointer">
-          <input 
-            type="checkbox" 
-            checked={useAdvancedFiltering}
-            onChange={() => setUseAdvancedFiltering(!useAdvancedFiltering)}
-            className="sr-only peer" 
+      {/* Header section */}
+      <Paper 
+        elevation={1} 
+        sx={{ 
+          p: 2, 
+          mb: 3, 
+          borderRadius: '12px',
+          background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+          color: 'white'
+        }}
+      >
+        <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
+          Create Analytics Task
+        </Typography>
+        <Typography variant="body1" sx={{ mb: 2, opacity: 0.9 }}>
+          Configure your analytics parameters to generate insights across your game performance
+        </Typography>
+        
+        {/* Form summary */}
+        <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
+          <Chip 
+            size="medium" 
+            label={formData.taskName || "Unnamed Task"} 
+            sx={{ 
+              bgcolor: 'rgba(255,255,255,0.2)', 
+              color: 'white',
+              fontWeight: 'bold' 
+            }}
           />
-          <div className="relative w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
-          <span className="ms-3 text-sm font-medium text-gray-300">Use Advanced Filtering</span>
-        </label>
-      </div>
+          {formData.startDate && formData.endDate && (
+            <Chip 
+              size="medium" 
+              label={`${formData.startDate} to ${formData.endDate}`} 
+              sx={{ 
+                bgcolor: 'rgba(255,255,255,0.2)', 
+                color: 'white',
+                fontWeight: 'bold' 
+              }}
+            />
+          )}
+          {useAdvancedFiltering && formData.gameSources.length > 0 && (
+            <Chip 
+              size="medium" 
+              label={`${formData.gameSources.length} games selected`} 
+              sx={{ 
+                bgcolor: 'rgba(255,255,255,0.2)', 
+                color: 'white',
+                fontWeight: 'bold' 
+              }}
+            />
+          )}
+        </Box>
+      </Paper>
       
-      {useAdvancedFiltering ? (
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">
-            Advanced Game Source Filtering
-          </label>
-          <div className="bg-gray-800 p-4 rounded-md">
+      {/* Main form content */}
+      <Stack spacing={3}>
+        {/* Task name field */}
+        <Box>
+          <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'medium' }}>
+            Task Name
+          </Typography>
+          <TextField
+            fullWidth
+            id="taskName"
+            name="taskName"
+            value={formData.taskName}
+            onChange={handleInputChange}
+            placeholder="Performance Analysis Q2"
+            variant="outlined"
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                  borderColor: '#4a5568',
+                },
+                '&:hover fieldset': {
+                  borderColor: '#6a53bf',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#6a53bf',
+                },
+              },
+            }}
+          />
+        </Box>
+        
+        {/* Date range */}
+        <Box>
+          <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'medium' }}>
+            Date Range
+          </Typography>
+          <DateRangeFilter
+            startDate={formData.startDate}
+            endDate={formData.endDate}
+            onDateChange={handleDateChange}
+          />
+        </Box>
+        
+        {/* Filtering toggle */}
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 'medium' }}>
+            Advanced Filtering
+          </Typography>
+          <FormControlLabel
+            control={
+              <Switch 
+                checked={useAdvancedFiltering}
+                onChange={() => setUseAdvancedFiltering(!useAdvancedFiltering)}
+                sx={{
+                  '& .MuiSwitch-switchBase.Mui-checked': {
+                    color: '#6a53bf',
+                    '&:hover': {
+                      backgroundColor: '#6a53bf20',
+                    },
+                  },
+                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                    backgroundColor: '#6a53bf',
+                  },
+                }}
+              />
+            }
+            label=""
+          />
+        </Box>
+        
+        {/* Game filtering */}
+        {useAdvancedFiltering ? (
+          <Box>
+            <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'medium' }}>
+              Game Source Filtering
+            </Typography>
             <MultiGameSelection 
               value={{ 
                 gameSources: formData.gameSources, 
@@ -191,103 +312,201 @@ function TaskCreationForm() {
               }}
               onChange={handleGameSelectionChange} 
             />
-          </div>
-        </div>
-      ) : (
-        <div className="bg-gray-800 p-4 rounded-md">
-          <p className="text-sm text-gray-400">Using default filtering (all games)</p>
-          <p className="text-xs text-gray-500 mt-1">Enable advanced filtering to select specific games and characters</p>
-        </div>
-      )}
-      
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
-          Metrics to Track
-        </label>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="metric-kills"
-              value="kills"
-              checked={formData.metrics.includes('kills')}
-              onChange={handleMetricsChange}
-              className="h-4 w-4 text-purple-500 focus:ring-purple-400 rounded"
+          </Box>
+        ) : (
+          <Paper 
+            elevation={1} 
+            sx={{ 
+              p: 3, 
+              mb: 2, 
+              borderRadius: '12px',
+              bgcolor: '#1e293b',
+              color: 'white',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '1px dashed #4a5568'
+            }}
+          >
+            <Typography variant="subtitle1" sx={{ fontWeight: 'medium', mb: 1 }}>
+              Using Default Filtering
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#94a3b8', textAlign: 'center' }}>
+              Enable advanced filtering to select specific games and characters for more detailed analysis
+            </Typography>
+          </Paper>
+        )}
+        
+        {/* Metrics */}
+        <Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 'medium' }}>
+              Metrics to Track
+            </Typography>
+            <Chip 
+              size="small" 
+              label={`${selectedMetrics} of ${totalMetrics} selected`} 
+              color="primary"
+              variant="outlined"
             />
-            <label htmlFor="metric-kills" className="ml-2 text-sm text-gray-300">
-              Kills
-            </label>
-          </div>
+          </Box>
           
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="metric-deaths"
-              value="deaths"
-              checked={formData.metrics.includes('deaths')}
-              onChange={handleMetricsChange}
-              className="h-4 w-4 text-purple-500 focus:ring-purple-400 rounded"
-            />
-            <label htmlFor="metric-deaths" className="ml-2 text-sm text-gray-300">
-              Deaths
-            </label>
-          </div>
+          {/* Metrics progress bar */}
+          <LinearProgress 
+            variant="determinate" 
+            value={metricsPercentage} 
+            sx={{ 
+              height: 4, 
+              mb: 2,
+              borderRadius: 2,
+              '& .MuiLinearProgress-bar': {
+                bgcolor: '#6a53bf'
+              }
+            }}
+          />
           
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="metric-wins"
-              value="wins"
-              checked={formData.metrics.includes('wins')}
-              onChange={handleMetricsChange}
-              className="h-4 w-4 text-purple-500 focus:ring-purple-400 rounded"
-            />
-            <label htmlFor="metric-wins" className="ml-2 text-sm text-gray-300">
-              Wins
-            </label>
-          </div>
-          
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="metric-kd"
-              value="kd_ratio"
-              checked={formData.metrics.includes('kd_ratio')}
-              onChange={handleMetricsChange}
-              className="h-4 w-4 text-purple-500 focus:ring-purple-400 rounded"
-            />
-            <label htmlFor="metric-kd" className="ml-2 text-sm text-gray-300">
-              KD Ratio
-            </label>
-          </div>
-          
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="metric-winrate"
-              value="win_rate"
-              checked={formData.metrics.includes('win_rate')}
-              onChange={handleMetricsChange}
-              className="h-4 w-4 text-purple-500 focus:ring-purple-400 rounded"
-            />
-            <label htmlFor="metric-winrate" className="ml-2 text-sm text-gray-300">
-              Win Rate
-            </label>
-          </div>
-        </div>
-      </div>
-      
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className={`w-full py-2 px-4 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 
-          ${isSubmitting 
-            ? 'bg-gray-600 cursor-not-allowed' 
-            : 'bg-purple-600 hover:bg-purple-700'}`}
-      >
-        {isSubmitting ? 'Creating...' : 'Create Analytics Task'}
-      </button>
-    </form>
+          <Paper 
+            elevation={1} 
+            sx={{ 
+              p: 2,
+              borderRadius: '12px',
+              bgcolor: '#1e293b',
+            }}
+          >
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 1 }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    id="metric-kills"
+                    value="kills"
+                    checked={formData.metrics.includes('kills')}
+                    onChange={handleMetricsChange}
+                    size="small"
+                    sx={{
+                      color: '#a0aec0',
+                      '&.Mui-checked': {
+                        color: '#6a53bf',
+                      },
+                    }}
+                  />
+                }
+                label={<Typography variant="body2">Kills</Typography>}
+              />
+              
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    id="metric-deaths"
+                    value="deaths"
+                    checked={formData.metrics.includes('deaths')}
+                    onChange={handleMetricsChange}
+                    size="small"
+                    sx={{
+                      color: '#a0aec0',
+                      '&.Mui-checked': {
+                        color: '#6a53bf',
+                      },
+                    }}
+                  />
+                }
+                label={<Typography variant="body2">Deaths</Typography>}
+              />
+              
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    id="metric-wins"
+                    value="wins"
+                    checked={formData.metrics.includes('wins')}
+                    onChange={handleMetricsChange}
+                    size="small"
+                    sx={{
+                      color: '#a0aec0',
+                      '&.Mui-checked': {
+                        color: '#6a53bf',
+                      },
+                    }}
+                  />
+                }
+                label={<Typography variant="body2">Wins</Typography>}
+              />
+              
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    id="metric-kd"
+                    value="kd_ratio"
+                    checked={formData.metrics.includes('kd_ratio')}
+                    onChange={handleMetricsChange}
+                    size="small"
+                    sx={{
+                      color: '#a0aec0',
+                      '&.Mui-checked': {
+                        color: '#6a53bf',
+                      },
+                    }}
+                  />
+                }
+                label={<Typography variant="body2">KD Ratio</Typography>}
+              />
+              
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    id="metric-winrate"
+                    value="win_rate"
+                    checked={formData.metrics.includes('win_rate')}
+                    onChange={handleMetricsChange}
+                    size="small"
+                    sx={{
+                      color: '#a0aec0',
+                      '&.Mui-checked': {
+                        color: '#6a53bf',
+                      },
+                    }}
+                  />
+                }
+                label={<Typography variant="body2">Win Rate</Typography>}
+              />
+            </Box>
+          </Paper>
+        </Box>
+        
+        {/* Submit button */}
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          variant="contained"
+          size="large"
+          sx={{
+            py: 1.5,
+            background: 'linear-gradient(90deg, #6a53bf 0%, #8a70d6 100%)',
+            borderRadius: '10px',
+            fontWeight: 'bold',
+            mt: 2,
+            '&:hover': {
+              background: 'linear-gradient(90deg, #5a46a8 0%, #7a62c1 100%)',
+            },
+            '&.Mui-disabled': {
+              background: '#2d3748',
+              color: '#a0aec0'
+            }
+          }}
+        >
+          {isSubmitting ? (
+            <>
+              <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                Creating Task...
+                <Box sx={{ ml: 2, display: 'inline-block', width: 16, height: 16 }}>
+                  <CircularProgress size={16} color="inherit" />
+                </Box>
+              </Box>
+            </>
+          ) : 'Create Analytics Task'}
+        </Button>
+      </Stack>
+    </Box>
   );
 }
 
