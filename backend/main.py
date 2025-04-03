@@ -18,13 +18,21 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Gaming Analytics API")
 
-# Add CORS middleware
+# Add CORS middleware with expanded origins for Replit environment
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific origins
+    allow_origins=[
+        "*",  # Allow all origins during development
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://*.replit.dev",  # Replit-specific domains
+        "https://*.replit.app", 
+        "https://*.repl.co"
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 @app.get("/")
