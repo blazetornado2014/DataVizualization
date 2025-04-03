@@ -141,8 +141,13 @@ def cancel_task(task_id: int, db: Session = Depends(get_db)):
     return task
 
 @app.get("/api/tasks/{task_id}/results", response_model=TaskResult)
-def get_task_results(task_id: int, db: Session = Depends(get_db)):
-    """Get results for a completed task"""
+def get_task_results(
+    task_id: int, 
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """Get results for a completed task with optional date filtering"""
     # Check if task exists and is completed
     task = db.query(Task).filter(Task.id == task_id).first()
     if not task:
@@ -151,8 +156,18 @@ def get_task_results(task_id: int, db: Session = Depends(get_db)):
     if task.status != "complete":
         raise HTTPException(status_code=400, detail="Task is not completed yet")
     
-    # Get stats for this task
-    stats = db.query(GameStatistic).filter(GameStatistic.task_id == task_id).all()
+    # Build the query with filters
+    query = db.query(GameStatistic).filter(GameStatistic.task_id == task_id)
+    
+    # Add date filters if provided
+    if start_date:
+        query = query.filter(GameStatistic.date >= start_date)
+    
+    if end_date:
+        query = query.filter(GameStatistic.date <= end_date)
+    
+    # Execute the query
+    stats = query.all()
     
     # Convert to response format
     result_data = []

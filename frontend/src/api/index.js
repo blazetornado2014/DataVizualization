@@ -68,9 +68,24 @@ export const createTask = async (taskData) => {
   return handleResponse(response);
 };
 
-// Get task results
-export const fetchTaskResults = async (taskId) => {
-  const url = `${API_BASE_URL}/tasks/${taskId}/results`;
+// Get task results with optional date filtering
+export const fetchTaskResults = async (taskId, startDate = null, endDate = null) => {
+  let url = `${API_BASE_URL}/tasks/${taskId}/results`;
+  
+  // Add date range filtering parameters if provided
+  const params = new URLSearchParams();
+  if (startDate) {
+    params.append('start_date', startDate);
+  }
+  if (endDate) {
+    params.append('end_date', endDate);
+  }
+  
+  const queryString = params.toString();
+  if (queryString) {
+    url = `${url}?${queryString}`;
+  }
+  
   logRequest(url);
   const response = await fetch(url, {
     headers: {

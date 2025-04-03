@@ -11,15 +11,27 @@ function Dashboard({ selectedTask }) {
   const [activeTab, setActiveTab] = useState('trends');
   const [activeGameFilter, setActiveGameFilter] = useState('all');
   const [activeMetric, setActiveMetric] = useState('kills');
+  
+  // Dynamic date range controls
+  const [dateRange, setDateRange] = useState({
+    startDate: null,
+    endDate: null
+  });
 
   // Reset game filter when task changes
   useEffect(() => {
     if (selectedTask) {
       setActiveGameFilter('all');
+      
+      // Set initial date range from the selected task
+      setDateRange({
+        startDate: selectedTask.start_date,
+        endDate: selectedTask.end_date
+      });
     }
   }, [selectedTask]);
 
-  // Fetch results when a completed task is selected
+  // Fetch results when a completed task is selected or date range changes
   useEffect(() => {
     const getResults = async () => {
       if (!selectedTask || selectedTask.status !== 'complete') {
@@ -31,7 +43,12 @@ function Dashboard({ selectedTask }) {
       setError(null);
       
       try {
-        const taskResults = await fetchTaskResults(selectedTask.id);
+        // Pass the date range to the API for filtering
+        const taskResults = await fetchTaskResults(
+          selectedTask.id,
+          dateRange.startDate,
+          dateRange.endDate
+        );
         setResults(taskResults);
       } catch (err) {
         console.error('Error fetching task results:', err);
@@ -43,7 +60,7 @@ function Dashboard({ selectedTask }) {
     };
     
     getResults();
-  }, [selectedTask]);
+  }, [selectedTask, dateRange.startDate, dateRange.endDate]);
 
   if (!selectedTask) {
     return (
@@ -129,22 +146,87 @@ function Dashboard({ selectedTask }) {
     );
   }
 
-  // Filter data based on active game filter
-  const filteredData = activeGameFilter === 'all' 
-    ? results.data 
-    : results.data.filter(item => item.game === activeGameFilter);
+  // Filter data based on active game filter and date range
+  const filteredData = results.data
+    .filter(item => {
+      // Apply game filter if not set to 'all'
+      if (activeGameFilter !== 'all' && item.game !== activeGameFilter) {
+        return false;
+      }
+      
+      // Apply date range filter if dates are selected
+      if (dateRange.startDate || dateRange.endDate) {
+        const itemDate = new Date(item.date);
+        
+        // Check if item date is before start date
+        if (dateRange.startDate && itemDate < new Date(dateRange.startDate)) {
+          return false;
+        }
+        
+        // Check if item date is after end date
+        if (dateRange.endDate && itemDate > new Date(dateRange.endDate)) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
 
   return (
     <div>
       <div className="mb-6">
         <h3 className="text-xl font-bold text-purple-400 font-orbitron mb-1">{selectedTask.name}</h3>
-        <div className="flex flex-wrap items-center text-sm text-gray-400">
-          <span className="mr-4">
-            {new Date(selectedTask.start_date).toLocaleDateString()} to {new Date(selectedTask.end_date).toLocaleDateString()}
-          </span>
-          <span>
-            Game Type: {selectedTask.game_type === 'all' ? 'All Games' : selectedTask.game_type}
-          </span>
+        <div className="flex flex-wrap items-center justify-between mb-2">
+          <div className="text-sm text-gray-400">
+            <span className="mr-4">
+              Original Task Range: {new Date(selectedTask.start_date).toLocaleDateString()} to {new Date(selectedTask.end_date).toLocaleDateString()}
+            </span>
+            <span>
+              Game Type: {selectedTask.game_type === 'all' ? 'All Games' : selectedTask.game_type}
+            </span>
+          </div>
+        </div>
+        
+        {/* Dynamic Date Range Controls */}
+        <div className="bg-gray-800 p-3 rounded-md mt-3">
+          <h4 className="text-sm font-medium text-purple-300 mb-2">Date Range Filter</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="start-date" className="block text-xs text-gray-400 mb-1">Start Date</label>
+              <input 
+                type="date" 
+                id="start-date"
+                value={dateRange.startDate || ''}
+                onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
+                min={selectedTask.start_date}
+                max={dateRange.endDate || selectedTask.end_date}
+                className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+            <div>
+              <label htmlFor="end-date" className="block text-xs text-gray-400 mb-1">End Date</label>
+              <input 
+                type="date" 
+                id="end-date"
+                value={dateRange.endDate || ''}
+                onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
+                min={dateRange.startDate || selectedTask.start_date}
+                max={selectedTask.end_date}
+                className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+          </div>
+          <div className="mt-3 flex justify-end">
+            <button
+              onClick={() => setDateRange({
+                startDate: selectedTask.start_date,
+                endDate: selectedTask.end_date
+              })}
+              className="px-3 py-1 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded-md"
+            >
+              Reset to Original Dates
+            </button>
+          </div>
         </div>
       </div>
 
