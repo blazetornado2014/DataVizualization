@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import LineChart from './LineChart';
 import BarChart from './BarChart';
 import GameSelectionFilter from './GameSelectionFilter';
-import DateRangeFilter from './DateRangeFilter';
+import SimpleDateFilter from './SimpleDateFilter';
 import { fetchTaskResults } from '../api';
 
 function Dashboard({ selectedTask }) {
@@ -244,97 +244,14 @@ function Dashboard({ selectedTask }) {
           </div>
           
           {/* Date Range Filter inside visualization area */}
-          <div className="mb-6 bg-gray-800 p-3 rounded-md">
-            <h4 className="text-white text-sm font-medium mb-2">Filter By Date Range</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-gray-400 text-xs mb-1">Start Date</label>
-                <DatePicker
-                  selected={filterStartDate}
-                  onChange={(date) => {
-                    console.log("Setting start date:", date);
-                    setFilterStartDate(date);
-                  }}
-                  selectsStart
-                  startDate={filterStartDate}
-                  endDate={filterEndDate}
-                  minDate={new Date(selectedTask.start_date)}
-                  maxDate={filterEndDate || new Date(selectedTask.end_date)}
-                  className="w-full bg-gray-900 text-white px-2 py-1 text-sm rounded-md border border-gray-700 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                  dateFormat="MMM d, yyyy"
-                  showPopperArrow={false}
-                  popperPlacement="bottom-start"
-                  popperModifiers={[
-                    {
-                      name: "offset",
-                      options: {
-                        offset: [0, 8],
-                      },
-                    },
-                    {
-                      name: "preventOverflow",
-                      options: {
-                        rootBoundary: "viewport",
-                        padding: 8,
-                      },
-                    },
-                  ]}
-                  fixedHeight
-                />
-              </div>
-              <div>
-                <label className="block text-gray-400 text-xs mb-1">End Date</label>
-                <DatePicker
-                  selected={filterEndDate}
-                  onChange={(date) => {
-                    console.log("Setting end date:", date);
-                    setFilterEndDate(date);
-                  }}
-                  selectsEnd
-                  startDate={filterStartDate}
-                  endDate={filterEndDate}
-                  minDate={filterStartDate || new Date(selectedTask.start_date)}
-                  maxDate={new Date(selectedTask.end_date)}
-                  className="w-full bg-gray-900 text-white px-2 py-1 text-sm rounded-md border border-gray-700 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                  dateFormat="MMM d, yyyy"
-                  showPopperArrow={false}
-                  popperPlacement="bottom-start"
-                  popperModifiers={[
-                    {
-                      name: "offset",
-                      options: {
-                        offset: [0, 8],
-                      },
-                    },
-                    {
-                      name: "preventOverflow",
-                      options: {
-                        rootBoundary: "viewport",
-                        padding: 8,
-                      },
-                    },
-                  ]}
-                  fixedHeight
-                />
-              </div>
-            </div>
-            {filterStartDate && filterEndDate && (
-              <div className="mt-2 flex justify-between items-center">
-                <div className="text-xs text-gray-400">
-                  Filtering: {filterStartDate.toLocaleDateString()} - {filterEndDate.toLocaleDateString()}
-                </div>
-                <button 
-                  onClick={() => {
-                    setFilterStartDate(new Date(selectedTask.start_date));
-                    setFilterEndDate(new Date(selectedTask.end_date));
-                  }}
-                  className="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded"
-                >
-                  Reset
-                </button>
-              </div>
-            )}
-          </div>
+          <SimpleDateFilter 
+            startDate={filterStartDate}
+            endDate={filterEndDate}
+            onStartDateChange={setFilterStartDate}
+            onEndDateChange={setFilterEndDate}
+            minDate={new Date(selectedTask.start_date)}
+            maxDate={new Date(selectedTask.end_date)}
+          />
 
           {activeTab === 'trends' ? (
             <LineChart 
