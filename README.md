@@ -99,8 +99,8 @@ Tasks go through the following states:
 - Pending
 - In Progress
 - Complete
-- Failed
-- Cancelled
+- Failed (TBA)
+- Cancelled (TBA)
 
 ## Character Support
 
