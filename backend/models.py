@@ -8,14 +8,14 @@ class Task(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    game_type = Column(String, nullable=False)  # 'all', 'valorant', 'overwatch', etc. or 'custom'
+    game_type = Column(String, nullable=False) 
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
-    metrics = Column(JSON, nullable=False)  # List of metrics to analyze
-    characters = Column(JSON, nullable=True)  # List of specific characters to include (for simple filtering)
-    gameSources = Column(JSON, nullable=True)  # List of game sources for advanced filtering
-    gameCharacters = Column(JSON, nullable=True)  # Dict mapping game sources to character lists
-    status = Column(String, nullable=False)  # 'pending', 'in_progress', 'complete', 'failed'
+    metrics = Column(JSON, nullable=False) 
+    characters = Column(JSON, nullable=True)  #List of specific characters to include (for simple filtering)
+    gameSources = Column(JSON, nullable=True)  #List of game sources for advanced filtering
+    gameCharacters = Column(JSON, nullable=True)  
+    status = Column(String, nullable=False) 
     
     statistics = relationship("GameStatistic", back_populates="task")
 
@@ -26,11 +26,10 @@ class GameStatistic(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     task_id = Column(Integer, ForeignKey("tasks.id"), nullable=False)
-    game = Column(String, nullable=False)  # 'valorant', 'overwatch', 'lol', etc.
-    character = Column(String, nullable=True)  # Game-specific character/hero/champion
+    game = Column(String, nullable=False)  
+    character = Column(String, nullable=True)  
     date = Column(Date, nullable=False)
     
-    # Performance metrics
     kills = Column(Integer, default=0)
     deaths = Column(Integer, default=0)
     wins = Column(Integer, default=0)

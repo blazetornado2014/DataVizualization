@@ -4,7 +4,6 @@ import { getCharactersForGame } from '../utils/gameData';
 function CharacterFilter({ gameType, selectedCharacter = 'all', onCharacterChange }) {
   const [characters, setCharacters] = useState([]);
 
-  // Load characters for selected game
   useEffect(() => {
     if (gameType && gameType !== 'all') {
       const gameCharacters = getCharactersForGame(gameType);

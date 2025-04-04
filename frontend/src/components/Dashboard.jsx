@@ -13,22 +13,18 @@ function Dashboard({ selectedTask }) {
   const [activeGameFilter, setActiveGameFilter] = useState('all');
   const [activeMetric, setActiveMetric] = useState('kills');
   
-  // Dynamic date range controls
   const [dateRange, setDateRange] = useState({
     startDate: null,
     endDate: null
   });
   
-  // Character filter state
   const [activeCharacter, setActiveCharacter] = useState('all');
 
-  // Reset filters when task changes
   useEffect(() => {
     if (selectedTask) {
       setActiveGameFilter('all');
       setActiveCharacter('all');
       
-      // Set initial date range from the selected task
       setDateRange({
         startDate: selectedTask.start_date,
         endDate: selectedTask.end_date
@@ -36,7 +32,6 @@ function Dashboard({ selectedTask }) {
     }
   }, [selectedTask]);
 
-  // Fetch results when a completed task is selected or filters change
   useEffect(() => {
     const getResults = async () => {
       if (!selectedTask || selectedTask.status !== 'complete') {
@@ -48,7 +43,6 @@ function Dashboard({ selectedTask }) {
       setError(null);
       
       try {
-        // Pass all filters to the API
         const taskResults = await fetchTaskResults(
           selectedTask.id,
           dateRange.startDate,
@@ -152,24 +146,19 @@ function Dashboard({ selectedTask }) {
     );
   }
 
-  // Filter data based on active game filter and date range
   const filteredData = results.data
     .filter(item => {
-      // Apply game filter if not set to 'all'
       if (activeGameFilter !== 'all' && item.game !== activeGameFilter) {
         return false;
       }
       
-      // Apply date range filter if dates are selected
       if (dateRange.startDate || dateRange.endDate) {
         const itemDate = new Date(item.date);
         
-        // Check if item date is before start date
         if (dateRange.startDate && itemDate < new Date(dateRange.startDate)) {
           return false;
         }
         
-        // Check if item date is after end date
         if (dateRange.endDate && itemDate > new Date(dateRange.endDate)) {
           return false;
         }
@@ -193,7 +182,6 @@ function Dashboard({ selectedTask }) {
           </div>
         </div>
         
-        {/* Dynamic Date Range Controls */}
         <div className="bg-gray-800 p-3 rounded-md mt-3">
           <h4 className="text-sm font-medium text-purple-300 mb-2">Date Range Filter</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -266,7 +254,7 @@ function Dashboard({ selectedTask }) {
               selectedGame={activeGameFilter} 
               onGameChange={(game) => {
                 setActiveGameFilter(game);
-                setActiveCharacter('all'); // Reset character when game changes
+                setActiveCharacter('all'); 
               }}
               includeAllOption={true} 
             />

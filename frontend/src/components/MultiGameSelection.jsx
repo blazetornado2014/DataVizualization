@@ -20,7 +20,6 @@ import {
 } from '@mui/material';
 import { getAvailableGames, getGameDisplayName, getCharactersForGame } from '../utils/gameData';
 
-// Game-specific branding colors - these match popular game color schemes
 const GAME_COLORS = {
   'valorant': {
     primary: '#fa4454',
@@ -62,29 +61,23 @@ const GAME_COLORS = {
  */
 const MultiGameSelection = ({ value = { gameSources: [], gameCharacters: {} }, onChange }) => {
   const availableGames = getAvailableGames();
-  // Track expanded states for each game's character list
   const [expandedGames, setExpandedGames] = useState({});
   
-  // Handle game selection/deselection
   const handleGameChange = (gameId, checked) => {
     let updatedSources = [...value.gameSources];
     let updatedCharacters = { ...value.gameCharacters };
     
     if (checked) {
-      // Add game to sources if it's not already there
       if (!updatedSources.includes(gameId)) {
         updatedSources.push(gameId);
       }
       
-      // Initialize empty character list for this game if needed
       if (!updatedCharacters[gameId]) {
         updatedCharacters[gameId] = [];
       }
     } else {
-      // Remove game from sources
       updatedSources = updatedSources.filter(id => id !== gameId);
       
-      // Remove characters for this game
       if (updatedCharacters[gameId]) {
         delete updatedCharacters[gameId];
       }
@@ -93,34 +86,28 @@ const MultiGameSelection = ({ value = { gameSources: [], gameCharacters: {} }, o
     onChange({ gameSources: updatedSources, gameCharacters: updatedCharacters });
   };
   
-  // Handle character selection/deselection for a specific game
   const handleCharacterChange = (gameId, characterId, checked) => {
-    // Make sure the game is in our sources
     let updatedSources = [...value.gameSources];
     if (!updatedSources.includes(gameId)) {
       updatedSources.push(gameId);
     }
     
-    // Update characters for this game
     let updatedCharacters = { ...value.gameCharacters };
     if (!updatedCharacters[gameId]) {
       updatedCharacters[gameId] = [];
     }
     
     if (checked) {
-      // Add character if not already there
       if (!updatedCharacters[gameId].includes(characterId)) {
         updatedCharacters[gameId] = [...updatedCharacters[gameId], characterId];
       }
     } else {
-      // Remove character
       updatedCharacters[gameId] = updatedCharacters[gameId].filter(id => id !== characterId);
     }
     
     onChange({ gameSources: updatedSources, gameCharacters: updatedCharacters });
   };
   
-  // Toggle expand/collapse for a game's character list
   const toggleExpanded = (gameId) => {
     setExpandedGames(prev => ({
       ...prev,
@@ -128,29 +115,24 @@ const MultiGameSelection = ({ value = { gameSources: [], gameCharacters: {} }, o
     }));
   };
   
-  // Select all characters for a game
   const selectAllCharacters = (gameId) => {
     const characters = getCharactersForGame(gameId);
     let updatedSources = [...value.gameSources];
     
-    // Make sure game is in sources
     if (!updatedSources.includes(gameId)) {
       updatedSources.push(gameId);
     }
     
-    // Set all characters
     let updatedCharacters = { ...value.gameCharacters };
     updatedCharacters[gameId] = [...characters];
     
     onChange({ gameSources: updatedSources, gameCharacters: updatedCharacters });
   };
   
-  // Deselect all characters for a game
   const deselectAllCharacters = (gameId) => {
     let updatedSources = [...value.gameSources];
     let updatedCharacters = { ...value.gameCharacters };
     
-    // If game is in sources, keep it but empty character list
     if (updatedSources.includes(gameId)) {
       updatedCharacters[gameId] = [];
     }
@@ -158,7 +140,6 @@ const MultiGameSelection = ({ value = { gameSources: [], gameCharacters: {} }, o
     onChange({ gameSources: updatedSources, gameCharacters: updatedCharacters });
   };
   
-  // Count the total number of selected games and characters
   const selectedGamesCount = value.gameSources.length;
   const totalCharactersCount = Object.values(value.gameCharacters)
     .reduce((total, chars) => total + chars.length, 0);
@@ -182,7 +163,6 @@ const MultiGameSelection = ({ value = { gameSources: [], gameCharacters: {} }, o
           Select games to include in your analysis and specific characters for each game
         </Typography>
         
-        {/* Selection summary */}
         {(selectedGamesCount > 0 || totalCharactersCount > 0) && (
           <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
             {selectedGamesCount > 0 && (
@@ -217,14 +197,11 @@ const MultiGameSelection = ({ value = { gameSources: [], gameCharacters: {} }, o
           const selectedCount = value.gameCharacters[gameId]?.length || 0;
           const isExpanded = expandedGames[gameId] || false;
           
-          // Get game-specific colors or fallback to default
           const gameColors = GAME_COLORS[gameId] || GAME_COLORS.all;
-          // Calculate selection percentage for progress bar
           const selectionPercentage = characters.length > 0 
             ? (selectedCount / characters.length) * 100 
             : 0;
           
-          // First letter of game name for avatar
           const gameInitial = getGameDisplayName(gameId).charAt(0);
           
           return (
@@ -249,7 +226,6 @@ const MultiGameSelection = ({ value = { gameSources: [], gameCharacters: {} }, o
                   }
                 }}
               >
-                {/* Game header with branded color */}
                 <Box sx={{ 
                   bgcolor: gameColors.secondary,
                   color: 'white',
@@ -288,7 +264,6 @@ const MultiGameSelection = ({ value = { gameSources: [], gameCharacters: {} }, o
                   />
                 </Box>
                 
-                {/* Selection progress bar */}
                 {value.gameSources.includes(gameId) && characters.length > 0 && (
                   <LinearProgress 
                     variant="determinate" 
@@ -304,7 +279,6 @@ const MultiGameSelection = ({ value = { gameSources: [], gameCharacters: {} }, o
                 
                 <Box sx={{ p: 2, flexGrow: 1 }}>
                   <FormControl component="fieldset" sx={{ width: '100%' }}>
-                    {/* Character count badge */}
                     {selectedCount > 0 && (
                       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
                         <Chip 
@@ -320,7 +294,6 @@ const MultiGameSelection = ({ value = { gameSources: [], gameCharacters: {} }, o
                       </Box>
                     )}
                     
-                    {/* Only show character selection when game is selected */}
                     {value.gameSources.includes(gameId) && characters.length > 0 && (
                       <Box>
                         <Box sx={{ 
@@ -328,7 +301,7 @@ const MultiGameSelection = ({ value = { gameSources: [], gameCharacters: {} }, o
                           justifyContent: 'space-between', 
                           alignItems: 'center', 
                           mb: 1,
-                          bgcolor: gameColors.primary + '10', // Very light background
+                          bgcolor: gameColors.primary + '10', 
                           p: 1,
                           borderRadius: '8px'
                         }}>
@@ -377,7 +350,7 @@ const MultiGameSelection = ({ value = { gameSources: [], gameCharacters: {} }, o
                                 sx={{ 
                                   bgcolor: gameColors.primary,
                                   '&:hover': {
-                                    bgcolor: gameColors.primary + 'dd', // Slightly transparent on hover
+                                    bgcolor: gameColors.primary + 'dd', 
                                   }
                                 }}
                               >

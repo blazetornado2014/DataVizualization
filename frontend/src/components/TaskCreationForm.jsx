@@ -26,7 +26,6 @@ function TaskCreationForm() {
     startDate: '',
     endDate: '',
     metrics: ['kills', 'deaths', 'wins'],
-    // Multi-game selection with game sources and per-game character filters
     gameSources: [],
     gameCharacters: {}
   });
@@ -80,14 +79,11 @@ function TaskCreationForm() {
     setSuccess(false);
 
     try {
-      // Validate form
       if (!formData.taskName.trim()) {
         throw new Error('Task name is required');
       }
 
-      // We now auto-initialize date fields with year values, so this check is simplified
       if (!formData.startDate || !formData.endDate) {
-        // Set default dates if somehow they're still missing
         const currentYear = new Date().getFullYear();
         if (!formData.startDate) {
           setFormData({
@@ -111,7 +107,6 @@ function TaskCreationForm() {
         throw new Error('Please select at least one game source');
       }
 
-      // Format the task data based on filtering mode
       const taskData = {
         name: formData.taskName,
         start_date: formData.startDate,
@@ -120,19 +115,16 @@ function TaskCreationForm() {
       };
 
       if (useAdvancedFiltering) {
-        // Advanced filtering - multiple games with specific character filters
         taskData.game_type = 'custom';
         taskData.gameSources = formData.gameSources;
         taskData.gameCharacters = formData.gameCharacters;
       } else {
-        // Simple filtering - single game type
         taskData.game_type = 'all';
         taskData.characters = [];
       }
 
       await createTask(taskData);
       
-      // Reset form
       setFormData({
         taskName: '',
         startDate: '',
@@ -151,14 +143,12 @@ function TaskCreationForm() {
     }
   };
 
-  // Calculate metrics percentage
-  const totalMetrics = 5; // Total available metrics
+  const totalMetrics = 5; 
   const selectedMetrics = formData.metrics.length;
   const metricsPercentage = (selectedMetrics / totalMetrics) * 100;
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-      {/* Status messages */}
       {error && (
         <Alert 
           severity="error" 
@@ -185,7 +175,6 @@ function TaskCreationForm() {
         </Alert>
       )}
       
-      {/* Header section */}
       <Paper 
         elevation={1} 
         sx={{ 
@@ -203,9 +192,7 @@ function TaskCreationForm() {
           Configure your analytics parameters to generate insights across your game performance
         </Typography>
         
-        {/* Form summary */}
         <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
-          {/* Task name chip removed as requested */}
           {formData.startDate && formData.endDate && (
             <Chip 
               size="medium" 
@@ -231,9 +218,7 @@ function TaskCreationForm() {
         </Box>
       </Paper>
       
-      {/* Main form content */}
       <Stack spacing={3}>
-        {/* Task name field */}
         <Box>
           <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'medium' }}>
             Task Name
@@ -259,13 +244,12 @@ function TaskCreationForm() {
                 },
               },
               '& .MuiInputBase-input': {
-                color: 'white', // Make input text white as requested
+                color: 'white',
               },
             }}
           />
         </Box>
         
-        {/* Date range */}
         <Box>
           <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'medium' }}>
             Date Range
@@ -277,7 +261,6 @@ function TaskCreationForm() {
           />
         </Box>
         
-        {/* Filtering toggle */}
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 'medium' }}>
             Advanced Filtering
@@ -304,7 +287,6 @@ function TaskCreationForm() {
           />
         </Box>
         
-        {/* Game filtering */}
         {useAdvancedFiltering ? (
           <Box>
             <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'medium' }}>
@@ -343,7 +325,6 @@ function TaskCreationForm() {
           </Paper>
         )}
         
-        {/* Metrics */}
         <Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
             <Typography variant="subtitle1" sx={{ fontWeight: 'medium' }}>
@@ -357,7 +338,6 @@ function TaskCreationForm() {
             />
           </Box>
           
-          {/* Metrics progress bar */}
           <LinearProgress 
             variant="determinate" 
             value={metricsPercentage} 
@@ -478,7 +458,6 @@ function TaskCreationForm() {
           </Paper>
         </Box>
         
-        {/* Submit button */}
         <Button
           type="submit"
           disabled={isSubmitting}

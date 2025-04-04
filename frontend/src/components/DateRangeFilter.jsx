@@ -2,19 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Box, Grid, TextField, Typography, MenuItem } from '@mui/material';
 
 function DateRangeFilter({ startDate, endDate, onDateChange }) {
-  // Get current year and generate a list of years (current year and 5 years back)
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 6 }, (_, i) => currentYear - i);
   
-  // Default dates
   const defaultStartDate = `${currentYear}-01-01`;
   const defaultEndDate = `${currentYear}-12-31`;
   
-  // Initialize state with default values if not provided
   const [startYear, setStartYear] = useState(startDate ? new Date(startDate).getFullYear().toString() : currentYear.toString());
   const [endYear, setEndYear] = useState(endDate ? new Date(endDate).getFullYear().toString() : currentYear.toString());
   
-  // Set initial date values if they're not already set
   useEffect(() => {
     if (!startDate) {
       onDateChange('startDate', defaultStartDate);
@@ -25,13 +21,11 @@ function DateRangeFilter({ startDate, endDate, onDateChange }) {
     }
   }, []);
   
-  // Update the date values when years change
   const handleStartYearChange = (year) => {
     setStartYear(year);
     const firstDayOfYear = `${year}-01-01`;
     onDateChange('startDate', firstDayOfYear);
     
-    // If end year is less than start year, update it
     if (parseInt(endYear) < parseInt(year)) {
       setEndYear(year);
       onDateChange('endDate', `${year}-12-31`);

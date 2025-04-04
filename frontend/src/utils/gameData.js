@@ -1,6 +1,3 @@
-// Game-specific character data and utilities
-
-// Character lists for different games
 export const GAME_CHARACTERS = {
   valorant: [
     'Jett', 'Phoenix', 'Raze', 'Reyna', 'Neon', 'Yoru', 'Breach', 'Fade', 
@@ -10,9 +7,9 @@ export const GAME_CHARACTERS = {
   overwatch: [
     'Ana', 'Ashe', 'Baptiste', 'Bastion', 'Brigitte', 'Cassidy', 'D.Va', 'Doomfist',
     'Echo', 'Genji', 'Hanzo', 'Junker Queen', 'Junkrat', 'Kiriko', 'Lifeweaver',
-    'Lúcio', 'Mei', 'Mercy', 'Moira', 'Orisa', 'Pharah', 'Ramattra', 'Reaper',
+    'Lucio', 'Mei', 'Mercy', 'Moira', 'Orisa', 'Pharah', 'Ramattra', 'Reaper',
     'Reinhardt', 'Roadhog', 'Sigma', 'Sojourn', 'Soldier: 76', 'Sombra', 'Symmetra',
-    'Torbjörn', 'Tracer', 'Widowmaker', 'Winston', 'Wrecking Ball', 'Zarya', 'Zenyatta'
+    'Torbjorn', 'Tracer', 'Widowmaker', 'Winston', 'Wrecking Ball', 'Zarya', 'Zenyatta'
   ],
   'league_of_legends': [
     'Aatrox', 'Ahri', 'Akali', 'Akshan', 'Alistar', 'Amumu', 'Anivia', 'Annie',
@@ -48,7 +45,6 @@ export const GAME_CHARACTERS = {
   ]
 };
 
-// Get a display name for a game
 export const getGameDisplayName = (gameId) => {
   const displayNames = {
     'valorant': 'Valorant',
@@ -62,17 +58,14 @@ export const getGameDisplayName = (gameId) => {
   return displayNames[gameId] || gameId;
 };
 
-// Get characters for a specific game
 export const getCharactersForGame = (gameId) => {
   if (gameId === 'all') {
-    // For 'all' game type, return an empty array as it's not specific to any game
     return [];
   }
   
   return GAME_CHARACTERS[gameId] || [];
 };
 
-// Get a list of available games
 export const getAvailableGames = () => {
   return [
     'all',

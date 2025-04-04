@@ -33,14 +33,12 @@ function BarChart({ data, metric, gameFilter }) {
     let processedData;
     
     if (gameFilter === 'all') {
-      // Group data by game
       processedData = d3.rollups(
         data,
         v => d3.mean(v, d => d[metric] || 0),
         d => d.game
       ).map(([game, value]) => ({ category: game, value }));
     } else {
-      // Group data by character/hero
       processedData = d3.rollups(
         data,
         v => d3.mean(v, d => d[metric] || 0),
@@ -48,15 +46,12 @@ function BarChart({ data, metric, gameFilter }) {
       ).map(([character, value]) => ({ category: character, value }));
     }
     
-    // Sort data by value in descending order
     processedData.sort((a, b) => b.value - a.value);
     
-    // Limit to top 10 if there are more than 10 categories
     if (processedData.length > 10) {
       processedData = processedData.slice(0, 10);
     }
     
-    // Create scales
     const x = d3.scaleBand()
       .domain(processedData.map(d => d.category))
       .range([0, width])
@@ -66,12 +61,10 @@ function BarChart({ data, metric, gameFilter }) {
       .domain([0, d3.max(processedData, d => d.value) * 1.1])
       .range([height, 0]);
     
-    // Create color scale based on value
     const colorScale = d3.scaleSequential()
       .domain([0, d3.max(processedData, d => d.value)])
       .interpolator(d3.interpolateViridis);
     
-    // Add X axis
     svg.append("g")
       .attr("transform", `translate(0,${height})`)
       .call(d3.axisBottom(x))
@@ -82,13 +75,11 @@ function BarChart({ data, metric, gameFilter }) {
       .attr("transform", "rotate(-45)")
       .attr("fill", "#9CA3AF");
     
-    // Add Y axis
     svg.append("g")
       .call(d3.axisLeft(y))
       .selectAll("text")
       .attr("fill", "#9CA3AF");
     
-    // Add bars
     svg.selectAll(".bar")
       .data(processedData)
       .enter()
@@ -105,7 +96,6 @@ function BarChart({ data, metric, gameFilter }) {
           .duration(100)
           .attr("opacity", 0.8);
         
-        // Format metric name for display
         let metricName = metric === 'kd_ratio' ? 'K/D Ratio' : 
                          metric === 'win_rate' ? 'Win Rate' : 
                          metric.charAt(0).toUpperCase() + metric.slice(1);
@@ -140,7 +130,6 @@ function BarChart({ data, metric, gameFilter }) {
       .attr("height", d => height - y(d.value))
       .delay((d, i) => i * 100);
     
-    // Add value labels on top of bars
     svg.selectAll(".label")
       .data(processedData)
       .enter()
@@ -158,7 +147,6 @@ function BarChart({ data, metric, gameFilter }) {
       .style("opacity", 1)
       .delay((d, i) => i * 100 + 400);
     
-    // Add chart title
     svg.append("text")
       .attr("x", width / 2)
       .attr("y", -15)
@@ -167,7 +155,6 @@ function BarChart({ data, metric, gameFilter }) {
       .style("fill", "#A78BFA")
       .text(`${metric === 'kd_ratio' ? 'K/D Ratio' : metric === 'win_rate' ? 'Win Rate' : metric.charAt(0).toUpperCase() + metric.slice(1)} by ${gameFilter === 'all' ? 'Game' : 'Character'}`);
     
-    // Add X axis label
     svg.append("text")
       .attr("x", width / 2)
       .attr("y", height + margin.bottom - 10)
@@ -176,7 +163,6 @@ function BarChart({ data, metric, gameFilter }) {
       .style("fill", "#9CA3AF")
       .text(gameFilter === 'all' ? "Game" : "Character");
     
-    // Add Y axis label
     svg.append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", -margin.left + 15)
@@ -188,7 +174,6 @@ function BarChart({ data, metric, gameFilter }) {
            metric === 'win_rate' ? 'Win Rate (%)' : 
            metric.charAt(0).toUpperCase() + metric.slice(1));
     
-    // Add grid lines
     svg.selectAll("yGrid")
       .data(y.ticks())
       .join("line")
@@ -199,7 +184,6 @@ function BarChart({ data, metric, gameFilter }) {
       .attr("stroke", "#374151")
       .attr("stroke-width", 0.5);
     
-    // Clean up on unmount
     return () => {
       if (tooltipRef.current) {
         d3.select(tooltipRef.current).remove();

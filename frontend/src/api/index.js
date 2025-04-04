@@ -1,15 +1,10 @@
-// API functions for interacting with the backend
 
-// Base URL for API requests - simplified to work in Replit
-// We'll use a simple relative path approach, and let the Vite proxy handle it
 const API_BASE_URL = '/api';
 
-// Add debugging logs to track API requests
 const logRequest = (url, method = 'GET') => {
   console.log(`Making ${method} request to: ${url}`);
 };
 
-// Helper function for handling API responses
 const handleResponse = async (response) => {
   console.log('Response status:', response.status);
   
@@ -23,7 +18,6 @@ const handleResponse = async (response) => {
   return response.json();
 };
 
-// Get all tasks
 export const fetchTasks = async () => {
   const url = `${API_BASE_URL}/tasks`;
   logRequest(url);
@@ -35,7 +29,6 @@ export const fetchTasks = async () => {
   return handleResponse(response);
 };
 
-// Get a specific task
 export const fetchTask = async (taskId) => {
   const url = `${API_BASE_URL}/tasks/${taskId}`;
   logRequest(url);
@@ -47,12 +40,10 @@ export const fetchTask = async (taskId) => {
   return handleResponse(response);
 };
 
-// Create a new task
 export const createTask = async (taskData) => {
   const url = `${API_BASE_URL}/tasks`;
   logRequest(url, 'POST');
   
-  // Prepare the request body with required fields
   const requestBody = {
     name: taskData.name,
     game_type: taskData.game_type,
@@ -62,7 +53,6 @@ export const createTask = async (taskData) => {
     characters: taskData.characters || [],
   };
   
-  // Add multi-game selection fields if present
   if (taskData.gameSources && taskData.gameSources.length > 0) {
     requestBody.gameSources = taskData.gameSources;
   }
@@ -82,11 +72,9 @@ export const createTask = async (taskData) => {
   return handleResponse(response);
 };
 
-// Get task results with optional date and character filtering
 export const fetchTaskResults = async (taskId, startDate = null, endDate = null, character = null) => {
   let url = `${API_BASE_URL}/tasks/${taskId}/results`;
   
-  // Add filtering parameters if provided
   const params = new URLSearchParams();
   if (startDate) {
     params.append('start_date', startDate);
@@ -112,7 +100,6 @@ export const fetchTaskResults = async (taskId, startDate = null, endDate = null,
   return handleResponse(response);
 };
 
-// Cancel a task
 export const cancelTask = async (taskId) => {
   const url = `${API_BASE_URL}/tasks/${taskId}/cancel`;
   logRequest(url, 'POST');

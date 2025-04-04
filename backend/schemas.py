@@ -10,7 +10,6 @@ class TaskBase(BaseModel):
     end_date: date
     metrics: List[str]
     characters: Optional[List[str]] = []
-    # New fields for multi-game selection
     gameSources: Optional[List[str]] = []
     gameCharacters: Optional[Dict[str, List[str]]] = {}
     

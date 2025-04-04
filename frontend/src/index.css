@@ -11,7 +11,6 @@ body {
   font-family: 'Orbitron', sans-serif;
 }
 
-/* Gaming-inspired design elements */
 .gaming-gradient {
   background: linear-gradient(90deg, #6f42c1 0%, #e83e8c 100%);
 }
@@ -22,7 +21,6 @@ body {
   border-image-slice: 1;
 }
 
-/* Custom tooltip styles */
 .d3-tooltip {
   position: absolute;
   padding: 10px;
@@ -36,7 +34,6 @@ body {
   z-index: 100;
 }
 
-/* Status badge styles */
 .status-badge {
   display: inline-block;
   padding: 0.25rem 0.5rem;
@@ -65,7 +62,6 @@ body {
   color: white;
 }
 
-/* Chart related styles */
 .chart-container {
   background: rgba(17, 24, 39, 0.7);
   border-radius: 8px;
@@ -80,7 +76,6 @@ body {
   margin-bottom: 1rem;
 }
 
-/* Animation for loading */
 @keyframes pulse {
   0%, 100% {
     opacity: 1;

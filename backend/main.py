@@ -13,21 +13,16 @@ from schemas import TaskCreate, TaskResponse, TaskResult
 from task_queue import TaskQueue
 from data_generator import generate_game_statistics
 
-# Create database tables
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Gaming Analytics API")
 
-# Add CORS middleware with expanded origins for Replit environment
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "*",  # Allow all origins during development
+        "*", 
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "https://*.replit.dev",  # Replit-specific domains
-        "https://*.replit.app", 
-        "https://*.repl.co"
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -37,39 +32,29 @@ app.add_middleware(
 
 @app.get("/")
 def root():
-    """Root endpoint that redirects to API documentation"""
+    """Root endpoint"""
     return {"status": "success", "message": "Gaming Analytics API is running. Access the API at /api endpoints."}
 
-# Create task queue
 task_queue = TaskQueue()
 
-# Background task to process analytics tasks
 def process_analytics_task(task_id: int, db: Session):
-    # Get the task
     task = db.query(Task).filter(Task.id == task_id).first()
     if not task:
         return
     
-    # Update task status to in_progress
     task.status = "in_progress"
     db.commit()
     
     try:
-        # Simulate processing time (in a real app, this would be actual data processing)
-        processing_time = random.uniform(3, 8)  # Random time between 3 and 8 seconds
+        processing_time = random.uniform(3, 5)  
         time.sleep(processing_time)
         
-        # Process differently based on game_type
         if task.game_type == 'custom':
-            # Advanced multi-game filtering
             all_game_stats = []
             
-            # Process each game source separately with its specific character filters
             for game_source in task.gameSources:
-                # Get character filters for this game if they exist
                 character_filters = task.gameCharacters.get(game_source, []) if task.gameCharacters else []
                 
-                # Generate stats for this game
                 game_stats = generate_game_statistics(
                     game_source,
                     task.start_date,
@@ -78,13 +63,10 @@ def process_analytics_task(task_id: int, db: Session):
                     character_filters
                 )
                 
-                # Add to combined results
                 all_game_stats.extend(game_stats)
                 
-            # Use the combined stats
             game_stats = all_game_stats
         else:
-            # Standard filtering (single game or all games)
             game_stats = generate_game_statistics(
                 task.game_type,
                 task.start_date,
@@ -93,7 +75,6 @@ def process_analytics_task(task_id: int, db: Session):
                 task.characters
             )
         
-        # Store the generated data in the database
         for stat in game_stats:
             db_stat = GameStatistic(
                 task_id=task.id,
@@ -109,7 +90,6 @@ def process_analytics_task(task_id: int, db: Session):
             )
             db.add(db_stat)
         
-        # Update task status to complete
         task.status = "complete"
         db.commit()
     except Exception as e:
@@ -120,7 +100,6 @@ def process_analytics_task(task_id: int, db: Session):
 @app.post("/api/tasks", response_model=TaskResponse)
 def create_task(task: TaskCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     """Create a new analytics task"""
-    # Create task in DB
     db_task = Task(
         name=task.name,
         game_type=task.game_type,
@@ -131,7 +110,6 @@ def create_task(task: TaskCreate, background_tasks: BackgroundTasks, db: Session
         status="pending"
     )
     
-    # Add multi-game selection fields if provided
     if hasattr(task, 'gameSources') and task.gameSources:
         db_task.gameSources = task.gameSources
     
@@ -142,7 +120,6 @@ def create_task(task: TaskCreate, background_tasks: BackgroundTasks, db: Session
     db.commit()
     db.refresh(db_task)
     
-    # Add task processing to background tasks
     background_tasks.add_task(process_analytics_task, db_task.id, db)
     
     return db_task
@@ -184,7 +161,6 @@ def get_task_results(
     db: Session = Depends(get_db)
 ):
     """Get results for a completed task with optional date and character filtering"""
-    # Check if task exists and is completed
     task = db.query(Task).filter(Task.id == task_id).first()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -192,24 +168,19 @@ def get_task_results(
     if task.status != "complete":
         raise HTTPException(status_code=400, detail="Task is not completed yet")
     
-    # Build the query with filters
     query = db.query(GameStatistic).filter(GameStatistic.task_id == task_id)
     
-    # Add date filters if provided
     if start_date:
         query = query.filter(GameStatistic.date >= start_date)
     
     if end_date:
         query = query.filter(GameStatistic.date <= end_date)
     
-    # Add character filter if provided
     if character and character != 'all':
         query = query.filter(GameStatistic.character == character)
     
-    # Execute the query
     stats = query.all()
     
-    # Convert to response format
     result_data = []
     for stat in stats:
         result_data.append({

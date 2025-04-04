@@ -1,0 +1,33 @@
+# Root
+*.pyc
+__pycache__/
+.env
+*.db
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Python
+backend/__pycache__/
+backend/*.pyc
+backend/venv/
+backend/.env
+backend/*.db
+
+# FastAPI cache
+backend/.mypy_cache/
+
+# Node.js / React
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.next/
+frontend/build/
+
+# Logs
+*.log

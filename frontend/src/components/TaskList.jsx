@@ -33,7 +33,7 @@ function TaskList({ onTaskSelect }) {
         );
       default:
         return (
-          <span className={`${baseClasses} status-pending`}>
+          <span className={`${baseClasses} status-default`}>
             Unknown
           </span>
         );
