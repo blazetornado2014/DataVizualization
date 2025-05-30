@@ -30,8 +30,7 @@ A full-stack analytics dashboard for gamers to visualize and analyze performance
 ├── backend/               # FastAPI backend
 │   ├── main.py           # Main application entry
 │   ├── models.py         # Database models
-│   ├── schemas.py        # Pydantic schemas
-│   └── task_queue.py     # Task processing
+│   └── schemas.py        # Pydantic schemas
 ```
 
 ## Setup and Installation
@@ -99,8 +98,8 @@ Tasks go through the following states:
 - Pending
 - In Progress
 - Complete
-- Failed (TBA)
-- Cancelled (TBA)
+- Failed
+- Cancelled
 
 ## Character Support
 
