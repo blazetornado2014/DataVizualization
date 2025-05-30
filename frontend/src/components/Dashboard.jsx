@@ -7,11 +7,19 @@ import CharacterFilter from './CharacterFilter';
 // import { fetchTaskResults } from '../api'; // Removed as fetch is now via context
 
 function Dashboard({ selectedTask }) {
+
+  const {
+    selectedTaskResults,
+    isResultsLoading,
+    resultsError,
+    fetchAndSetTaskResults
+
   const { 
-    selectedTaskResults, 
-    isResultsLoading, 
-    resultsError, 
-    fetchAndSetTaskResults 
+    selectedTaskResults,
+    isResultsLoading,
+    resultsError,
+    fetchAndSetTaskResults
+
   } = useTaskContext();
   // const [results, setResults] = useState(null); // Remove
   // const [loading, setLoading] = useState(false); // Remove
