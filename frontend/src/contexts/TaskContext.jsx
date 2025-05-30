@@ -33,9 +33,9 @@ export function TaskProvider({ children }) {
     
     try {
       const newTask = await api.createTask(taskData);
-      setTasks(prevTasks => [...prevTasks, newTask]);
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      return newTask;
+      // setTasks(prevTasks => [...prevTasks, newTask]); // Remove this line
+      fetchTasks(); // Add this line to re-fetch all tasks
+      return newTask; // Still return the newTask object so UI can potentially use it
     } catch (err) {
       console.error('Error creating task:', err);
       setError(err.message);
