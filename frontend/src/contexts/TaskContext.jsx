@@ -12,6 +12,10 @@ export function TaskProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const [selectedTaskResults, setSelectedTaskResults] = useState(null);
+  const [isResultsLoading, setIsResultsLoading] = useState(false);
+  const [resultsError, setResultsError] = useState(null);
+
   const fetchTasks = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -67,13 +71,36 @@ export function TaskProvider({ children }) {
     }
   }, []);
 
+  const fetchAndSetTaskResults = useCallback(async (taskId, startDate, endDate, character) => {
+    if (!taskId) {
+      setSelectedTaskResults(null);
+      return;
+    }
+    setIsResultsLoading(true);
+    setResultsError(null);
+    try {
+      const results = await api.fetchTaskResults(taskId, startDate, endDate, character);
+      setSelectedTaskResults(results);
+    } catch (err) {
+      console.error('Error fetching task results:', err);
+      setResultsError(err.message);
+      setSelectedTaskResults(null); // Clear results on error
+    } finally {
+      setIsResultsLoading(false);
+    }
+  }, []);
+
   const value = {
     tasks,
-    isLoading,
-    error,
+    isLoading, // for tasks list
+    error,     // for tasks list
     fetchTasks,
     createTask,
     cancelTask,
+    selectedTaskResults, // New
+    isResultsLoading,    // New
+    resultsError,        // New
+    fetchAndSetTaskResults, // New
   };
 
   return (
