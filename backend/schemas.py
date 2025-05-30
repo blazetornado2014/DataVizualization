@@ -71,7 +71,7 @@ class GameStatisticBase(BaseModel):
 class TaskResult(BaseModel):
     """Schema for task results"""
     task_id: int
-    data: List[Dict[str, Any]]
+    data: List[GameStatisticBase] # This line is updated
     
     class Config:
         orm_mode = True
