@@ -12,30 +12,26 @@ GAME_CHARACTERS = {
 
 SUPPORTED_GAMES = list(GAME_CHARACTERS.keys())
 
+GAME_MODIFIERS = {
+    'valorant': {'kills': 1.2, 'deaths': 0.9},
+    'overwatch': {'kills': 1.5, 'deaths': 1.2},
+    'lol': {'kills': 0.8, 'deaths': 1.0},
+    'apex': {'kills': 1.3, 'deaths': 1.1},
+    'fortnite': {'kills': 1.0, 'deaths': 1.4},
+    # Default modifiers can be handled in the function or defined here
+    # For now, we'll handle unknown games in the function to match existing logic
+}
+
 def generate_daily_stat(game, character, stat_date, skill_level=0.5):
     """Generate realistic daily stats for a single game/character"""
     base_kills = random.randint(5, 25) * skill_level
     base_deaths = random.randint(5, 20) * (1.5 - skill_level)  
     base_win_chance = 0.3 + (skill_level * 0.4)  
     
-    if game == 'valorant':
-        kills_modifier = 1.2
-        deaths_modifier = 0.9
-    elif game == 'overwatch':
-        kills_modifier = 1.5
-        deaths_modifier = 1.2
-    elif game == 'lol':
-        kills_modifier = 0.8
-        deaths_modifier = 1.0
-    elif game == 'apex':
-        kills_modifier = 1.3
-        deaths_modifier = 1.1
-    elif game == 'fortnite':
-        kills_modifier = 1.0
-        deaths_modifier = 1.4
-    else:
-        kills_modifier = 1.0
-        deaths_modifier = 1.0
+    # Add this block in place of the removed one
+    game_specific_modifiers = GAME_MODIFIERS.get(game, {'kills': 1.0, 'deaths': 1.0})
+    kills_modifier = game_specific_modifiers['kills']
+    deaths_modifier = game_specific_modifiers['deaths']
         
     kills = max(0, int(base_kills * kills_modifier * random.uniform(0.8, 1.2)))
     deaths = max(1, int(base_deaths * deaths_modifier * random.uniform(0.8, 1.2)))  # At least 1 death
