@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import { useTaskContext } from '../contexts/TaskContext'; // Add this if not already present, or ensure it's used.
 import LineChart from './LineChart';
 import BarChart from './BarChart';
 import GameSelectionFilter from './GameSelectionFilter';
 import CharacterFilter from './CharacterFilter';
-import { fetchTaskResults } from '../api';
+// import { fetchTaskResults } from '../api'; // Removed as fetch is now via context
 
 function Dashboard({ selectedTask }) {
-  const [results, setResults] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const {
+    selectedTaskResults,
+    isResultsLoading,
+    resultsError,
+    fetchAndSetTaskResults
+  } = useTaskContext();
+  // const [results, setResults] = useState(null); // Remove
+  // const [loading, setLoading] = useState(false); // Remove
+  // const [error, setError] = useState(null); // Remove
   const [activeTab, setActiveTab] = useState('trends');
   const [activeGameFilter, setActiveGameFilter] = useState('all');
   const [activeMetric, setActiveMetric] = useState('kills');
@@ -33,34 +40,18 @@ function Dashboard({ selectedTask }) {
   }, [selectedTask]);
 
   useEffect(() => {
-    const getResults = async () => {
-      if (!selectedTask || selectedTask.status !== 'complete') {
-        setResults(null);
-        return;
-      }
-      
-      setLoading(true);
-      setError(null);
-      
-      try {
-        const taskResults = await fetchTaskResults(
-          selectedTask.id,
-          dateRange.startDate,
-          dateRange.endDate,
-          activeCharacter
-        );
-        setResults(taskResults);
-      } catch (err) {
-        console.error('Error fetching task results:', err);
-        setError('Failed to load results. Please try again.');
-        setResults(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    getResults();
-  }, [selectedTask, dateRange.startDate, dateRange.endDate, activeCharacter]);
+    if (selectedTask && selectedTask.status === 'complete') {
+      fetchAndSetTaskResults(
+        selectedTask.id,
+        dateRange.startDate,
+        dateRange.endDate,
+        activeCharacter
+      );
+    } else {
+      // Clear results if no task selected or task not complete
+      fetchAndSetTaskResults(null); // Call with null taskId to clear
+    }
+  }, [selectedTask, dateRange.startDate, dateRange.endDate, activeCharacter, fetchAndSetTaskResults]);
 
   if (!selectedTask) {
     return (
@@ -110,7 +101,7 @@ function Dashboard({ selectedTask }) {
     );
   }
 
-  if (loading) {
+  if (isResultsLoading) {
     return (
       <div className="bg-gray-700 rounded-lg p-8 flex justify-center items-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
@@ -119,13 +110,22 @@ function Dashboard({ selectedTask }) {
     );
   }
 
-  if (error) {
+  if (resultsError) {
     return (
       <div className="bg-red-900 text-white p-6 rounded-lg">
         <h3 className="text-xl font-medium">Error Loading Results</h3>
-        <p className="mt-2">{error}</p>
+        <p className="mt-2">{resultsError}</p>
         <button 
-          onClick={() => window.location.reload()}
+          onClick={() => { // Using fetchAndSetTaskResults to retry
+            if (selectedTask) {
+              fetchAndSetTaskResults(
+                selectedTask.id,
+                dateRange.startDate,
+                dateRange.endDate,
+                activeCharacter
+              );
+            }
+          }}
           className="mt-4 px-4 py-2 bg-red-700 hover:bg-red-800 rounded-md"
         >
           Retry
@@ -134,7 +134,7 @@ function Dashboard({ selectedTask }) {
     );
   }
 
-  if (!results || !results.data || results.data.length === 0) {
+  if (!selectedTaskResults || !selectedTaskResults.data || selectedTaskResults.data.length === 0) {
     return (
       <div className="bg-gray-700 rounded-lg p-8 text-center">
         <svg className="w-16 h-16 mx-auto text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -146,7 +146,7 @@ function Dashboard({ selectedTask }) {
     );
   }
 
-  const filteredData = results.data
+  const filteredData = selectedTaskResults.data
     .filter(item => {
       if (activeGameFilter !== 'all' && item.game !== activeGameFilter) {
         return false;

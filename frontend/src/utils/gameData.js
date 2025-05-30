@@ -67,12 +67,6 @@ export const getCharactersForGame = (gameId) => {
 };
 
 export const getAvailableGames = () => {
-  return [
-    'all',
-    'valorant',
-    'overwatch',
-    'league_of_legends',
-    'fortnite',
-    'apex_legends'
-  ];
+  const gameIds = Object.keys(GAME_CHARACTERS);
+  return ['all', ...gameIds];
 };
