@@ -10,7 +10,6 @@ import random
 from database import get_db, engine, Base
 from models import Task, GameStatistic
 from schemas import TaskCreate, TaskResponse, TaskResult
-from task_queue import TaskQueue
 from data_generator import generate_game_statistics
 
 Base.metadata.create_all(bind=engine)
@@ -34,8 +33,6 @@ app.add_middleware(
 def root():
     """Root endpoint"""
     return {"status": "success", "message": "Gaming Analytics API is running. Access the API at /api endpoints."}
-
-task_queue = TaskQueue()
 
 def process_analytics_task(task_id: int, db: Session):
     task = db.query(Task).filter(Task.id == task_id).first()
