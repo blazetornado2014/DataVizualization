@@ -14,12 +14,6 @@ function Dashboard({ selectedTask }) {
     resultsError,
     fetchAndSetTaskResults
 
-  const { 
-    selectedTaskResults,
-    isResultsLoading,
-    resultsError,
-    fetchAndSetTaskResults
-
   } = useTaskContext();
   // const [results, setResults] = useState(null); // Remove
   // const [loading, setLoading] = useState(false); // Remove
