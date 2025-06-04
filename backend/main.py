@@ -6,11 +6,12 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 import time
 import random
+import logging # Added import
 
-from database import get_db, engine, Base
-from models import Task, GameStatistic
-from schemas import TaskCreate, TaskResponse, TaskResult
-from data_generator import generate_game_statistics
+from .database import get_db, engine, Base
+from .models import Task, GameStatistic
+from .schemas import TaskCreate, TaskResponse, TaskResult
+from .data_generator import generate_game_statistics
 
 Base.metadata.create_all(bind=engine)
 
@@ -90,7 +91,7 @@ def process_analytics_task(task_id: int, db: Session):
         task.status = "complete"
         db.commit()
     except Exception as e:
-        print(f"Error processing task {task_id}: {str(e)}")
+        logging.exception(f"Error processing task {task_id}: {e}") # Changed to logging.exception
         task.status = "failed"
         db.commit()
 
@@ -148,6 +149,25 @@ def cancel_task(task_id: int, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(task)
     return task
+
+# New helper function to delete a task
+def delete_task(task_id: int, db: Session):
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    # Delete associated GameStatistic objects
+    db.query(GameStatistic).filter(GameStatistic.task_id == task_id).delete()
+
+    # Delete the Task object
+    db.delete(task)
+    db.commit()
+
+# New endpoint to delete a task
+@app.delete("/api/tasks/{task_id}")
+def delete_task_endpoint(task_id: int, db: Session = Depends(get_db)):
+    delete_task(task_id, db)
+    return JSONResponse(content={"message": "Task deleted successfully"}, status_code=200)
 
 @app.get("/api/tasks/{task_id}/results", response_model=TaskResult)
 def get_task_results(
