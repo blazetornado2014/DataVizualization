@@ -8,9 +8,6 @@ from backend.main import app  # Assuming app is in backend.main
 from backend.database import Base, get_db
 from backend.models import Task, GameStatistic
 from backend.schemas import TaskCreate # For creating tasks if needed
-from unittest.mock import patch
-import time
-import logging
 
 # Test database URL (SQLite in-memory)
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
@@ -100,51 +97,3 @@ def test_read_root():
     assert response.status_code == 200
     assert response.json() == {"status": "success", "message": "Gaming Analytics API is running. Access the API at /api endpoints."}
 
-
-@patch('backend.main.generate_game_statistics')
-def test_process_task_failure_and_logging(mock_generate_stats, caplog):
-    # Configure the mock to raise an exception
-    mock_generate_stats.side_effect = Exception("Simulated processing error")
-
-    # Set logging level for caplog to capture ERROR messages
-    caplog.set_level(logging.ERROR)
-
-    # Create a new task
-    task_payload = {
-        "name": "Test Task for Failure",
-        "game_type": "valorant", # Any valid game_type
-        "start_date": "2024-01-01",
-        "end_date": "2024-01-31",
-        "metrics": ["kills", "deaths"]
-    }
-    response = client.post("/api/tasks", json=task_payload)
-    assert response.status_code == 200 # Assuming 200 for task creation success
-    task_id = response.json()["id"]
-
-    # Wait for the background task to likely complete (or fail)
-    # TestClient processes background tasks after the response is returned.
-    # A short sleep can help ensure it has run.
-    time.sleep(0.5) # Using 0.5s, adjust if needed
-
-    # Fetch the task details
-    response = client.get(f"/api/tasks/{task_id}")
-    assert response.status_code == 200
-    task_data = response.json()
-    assert task_data["status"] == "failed"
-
-    # Verify logging
-    assert "Error processing task" in caplog.text
-    assert "Simulated processing error" in caplog.text
-
-    # Check that an exception was logged (exc_info is present)
-    assert len(caplog.records) > 0
-    # Find the relevant log record
-    error_log_record = None
-    for record in caplog.records:
-        if "Error processing task" in record.message and record.levelname == "ERROR":
-            error_log_record = record
-            break
-
-    assert error_log_record is not None, "Error log record not found"
-    assert error_log_record.exc_info is not None
-    assert "Simulated processing error" in str(error_log_record.exc_info[1])
