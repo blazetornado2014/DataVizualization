@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 import time
 import random
+import logging # Added import
 
 from .database import get_db, engine, Base
 from .models import Task, GameStatistic
@@ -90,7 +91,7 @@ def process_analytics_task(task_id: int, db: Session):
         task.status = "complete"
         db.commit()
     except Exception as e:
-        print(f"Error processing task {task_id}: {str(e)}")
+        logging.exception(f"Error processing task {task_id}: {e}") # Changed to logging.exception
         task.status = "failed"
         db.commit()
 

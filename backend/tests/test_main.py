@@ -96,3 +96,4 @@ def test_read_root():
     response = client.get("/")
     assert response.status_code == 200
     assert response.json() == {"status": "success", "message": "Gaming Analytics API is running. Access the API at /api endpoints."}
+
