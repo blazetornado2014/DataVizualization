@@ -44,6 +44,18 @@ class TaskBase(BaseModel):
             
         return values
 
+    @root_validator(skip_on_failure=True)
+    def validate_characters_for_specific_games(cls, values):
+        game_type = values.get('game_type')
+        characters = values.get('characters') # Will be an empty list by default if not provided
+
+        if game_type in ['valorant', 'overwatch']:
+            if not characters: # Checks for None or empty list
+                raise ValueError(
+                    "Characters must be provided for Valorant or Overwatch tasks and cannot be empty."
+                )
+        return values
+
 class TaskCreate(TaskBase):
     """Schema for creating a new Task"""
     pass
