@@ -6,11 +6,12 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 import time
 import random
+import logging # Added import
 
-from database import get_db, engine, Base
-from models import Task, GameStatistic
-from schemas import TaskCreate, TaskResponse, TaskResult
-from data_generator import generate_game_statistics
+from .database import get_db, engine, Base
+from .models import Task, GameStatistic
+from .schemas import TaskCreate, TaskResponse, TaskResult
+from .data_generator import generate_game_statistics
 
 Base.metadata.create_all(bind=engine)
 
@@ -73,24 +74,44 @@ def process_analytics_task(task_id: int, db: Session):
             )
         
         for stat in game_stats:
+            kills = stat.get("kills", 0)
+            deaths = stat.get("deaths", 0)
+            wins = stat.get("wins", 0)
+            losses = stat.get("losses", 0)
+
+            # Calculate K/D Ratio
+            if deaths > 0:
+                kd_ratio = float(kills) / deaths
+            elif kills > 0: # deaths is 0, kills > 0
+                kd_ratio = float(kills)
+            else: # kills is 0, deaths is 0
+                kd_ratio = 0.0
+
+            # Calculate Win Rate
+            total_games = wins + losses
+            if total_games > 0:
+                win_rate = float(wins) / total_games
+            else:
+                win_rate = 0.0
+
             db_stat = GameStatistic(
                 task_id=task.id,
                 game=stat["game"],
                 character=stat["character"],
-                date=stat["date"],
-                kills=stat.get("kills", 0),
-                deaths=stat.get("deaths", 0),
-                wins=stat.get("wins", 0),
-                losses=stat.get("losses", 0),
-                kd_ratio=stat.get("kd_ratio", 0),
-                win_rate=stat.get("win_rate", 0)
+                date=stat["date"], # Assuming date is always present and valid from generate_game_statistics
+                kills=kills,
+                deaths=deaths,
+                wins=wins,
+                losses=losses,
+                kd_ratio=kd_ratio,
+                win_rate=win_rate
             )
             db.add(db_stat)
         
         task.status = "complete"
         db.commit()
     except Exception as e:
-        print(f"Error processing task {task_id}: {str(e)}")
+        logging.exception(f"Error processing task {task_id}: {e}") # Changed to logging.exception
         task.status = "failed"
         db.commit()
 
@@ -148,6 +169,25 @@ def cancel_task(task_id: int, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(task)
     return task
+
+# New helper function to delete a task
+def delete_task(task_id: int, db: Session):
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    # Delete associated GameStatistic objects
+    db.query(GameStatistic).filter(GameStatistic.task_id == task_id).delete()
+
+    # Delete the Task object
+    db.delete(task)
+    db.commit()
+
+# New endpoint to delete a task
+@app.delete("/api/tasks/{task_id}")
+def delete_task_endpoint(task_id: int, db: Session = Depends(get_db)):
+    delete_task(task_id, db)
+    return JSONResponse(content={"message": "Task deleted successfully"}, status_code=200)
 
 @app.get("/api/tasks/{task_id}/results", response_model=TaskResult)
 def get_task_results(

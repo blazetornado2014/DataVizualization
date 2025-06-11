@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Date, Float, ForeignKey, JSON
 from sqlalchemy.orm import relationship
-from database import Base
+from .database import Base
 
 class Task(Base):
     """Database model for analytics tasks"""

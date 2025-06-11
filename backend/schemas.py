@@ -28,7 +28,7 @@ class TaskBase(BaseModel):
     
     @validator('metrics')
     def validate_metrics(cls, v):
-        valid_metrics = ['kills', 'deaths', 'wins', 'kd_ratio', 'win_rate']
+        valid_metrics = ['kills', 'deaths', 'wins', 'losses', 'kd_ratio', 'win_rate'] # Added 'losses'
         for metric in v:
             if metric not in valid_metrics:
                 raise ValueError(f'metrics must contain only valid values: {valid_metrics}')
@@ -42,6 +42,18 @@ class TaskBase(BaseModel):
         if game_type == 'custom' and not game_sources:
             raise ValueError('gameSources must be provided when game_type is "custom"')
             
+        return values
+
+    @root_validator(skip_on_failure=True)
+    def validate_characters_for_specific_games(cls, values):
+        game_type = values.get('game_type')
+        characters = values.get('characters') # Will be an empty list by default if not provided
+
+        if game_type in ['valorant', 'overwatch']:
+            if not characters: # Checks for None or empty list
+                raise ValueError(
+                    "Characters must be provided for Valorant or Overwatch tasks and cannot be empty."
+                )
         return values
 
 class TaskCreate(TaskBase):
