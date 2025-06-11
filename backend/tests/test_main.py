@@ -234,3 +234,4 @@ def test_create_task_other_game_type_empty_characters_succeeds():
     assert response_json["game_type"] == "apex_legends"
     assert response_json["characters"] == []
     assert response_json["status"] == "pending"
+

@@ -28,7 +28,7 @@ class TaskBase(BaseModel):
     
     @validator('metrics')
     def validate_metrics(cls, v):
-        valid_metrics = ['kills', 'deaths', 'wins', 'kd_ratio', 'win_rate']
+        valid_metrics = ['kills', 'deaths', 'wins', 'losses', 'kd_ratio', 'win_rate'] # Added 'losses'
         for metric in v:
             if metric not in valid_metrics:
                 raise ValueError(f'metrics must contain only valid values: {valid_metrics}')

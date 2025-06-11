@@ -74,17 +74,37 @@ def process_analytics_task(task_id: int, db: Session):
             )
         
         for stat in game_stats:
+            kills = stat.get("kills", 0)
+            deaths = stat.get("deaths", 0)
+            wins = stat.get("wins", 0)
+            losses = stat.get("losses", 0)
+
+            # Calculate K/D Ratio
+            if deaths > 0:
+                kd_ratio = float(kills) / deaths
+            elif kills > 0: # deaths is 0, kills > 0
+                kd_ratio = float(kills)
+            else: # kills is 0, deaths is 0
+                kd_ratio = 0.0
+
+            # Calculate Win Rate
+            total_games = wins + losses
+            if total_games > 0:
+                win_rate = float(wins) / total_games
+            else:
+                win_rate = 0.0
+
             db_stat = GameStatistic(
                 task_id=task.id,
                 game=stat["game"],
                 character=stat["character"],
-                date=stat["date"],
-                kills=stat.get("kills", 0),
-                deaths=stat.get("deaths", 0),
-                wins=stat.get("wins", 0),
-                losses=stat.get("losses", 0),
-                kd_ratio=stat.get("kd_ratio", 0),
-                win_rate=stat.get("win_rate", 0)
+                date=stat["date"], # Assuming date is always present and valid from generate_game_statistics
+                kills=kills,
+                deaths=deaths,
+                wins=wins,
+                losses=losses,
+                kd_ratio=kd_ratio,
+                win_rate=win_rate
             )
             db.add(db_stat)
         

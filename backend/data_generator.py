@@ -45,8 +45,8 @@ def generate_daily_stat(game, character, stat_date, skill_level=0.5):
     
     losses = matches - wins
     
-    kd_ratio = kills / deaths if deaths > 0 else kills
-    win_rate = (wins / matches) * 100 if matches > 0 else 0
+    # kd_ratio and win_rate calculations are removed from here.
+    # They will be calculated in process_analytics_task.
     
     stat = {
         "game": game,
@@ -55,9 +55,8 @@ def generate_daily_stat(game, character, stat_date, skill_level=0.5):
         "kills": kills,
         "deaths": deaths,
         "wins": wins,
-        "losses": losses,
-        "kd_ratio": round(kd_ratio, 2),
-        "win_rate": round(win_rate, 2)
+        "losses": losses
+        # "kd_ratio" and "win_rate" keys are removed
     }
     
     return stat
