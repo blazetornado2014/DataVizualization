@@ -1,5 +1,5 @@
 
-# Gaming Analytics Dashboard
+# Gaming Dashboard
 
 ## Overview
 A full-stack analytics dashboard for gamers to visualize and analyze performance statistics across multiple games (Valorant, Overwatch, League of Legends). The application provides real-time tracking, interactive visualizations, and customizable analytics.
